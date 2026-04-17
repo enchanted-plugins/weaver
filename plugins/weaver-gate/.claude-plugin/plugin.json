@@ -1,0 +1,21 @@
+{
+  "name": "weaver-gate",
+  "description": "Destructive-op decision-gate for git. Inspects every Bash invocation; routes force-push, history rewrite, branch/tag deletion, clean -fdx, and merge-queue bypass through a confirmation surface before execution.",
+  "version": "0.0.1",
+  "author": { "name": "enchanted-plugins" },
+  "license": "MIT",
+  "keywords": [
+    "git",
+    "safety",
+    "decision-gate",
+    "destructive-op",
+    "audit",
+    "hornet-pattern"
+  ],
+  "commands": [
+    "./commands/dry-run.md"
+  ],
+  "skills": [
+    "./skills/destructive-gate-confirmation/"
+  ]
+}
