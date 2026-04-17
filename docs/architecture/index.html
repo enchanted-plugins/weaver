@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Weaver — Architecture Explorer</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 0;
+  }
+  .brand-bar { height: 3px; background: #39d353; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+  h1 { font-size: 32px; margin-bottom: 4px; }
+  h1 span { color: #8b949e; font-size: 14px; font-weight: 400; margin-left: 12px; }
+  .subtitle { color: #484f58; font-size: 12px; margin-bottom: 32px; }
+  h2 {
+    font-size: 18px;
+    margin: 32px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #30363d;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0;
+    border-bottom: 1px solid #30363d;
+  }
+  .tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    color: #8b949e;
+    font-size: 13px;
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: #e6edf3; background: #161b22; }
+  .tab.active {
+    color: #e6edf3;
+    background: #161b22;
+    border-color: #30363d;
+    border-bottom-color: #161b22;
+    margin-bottom: -1px;
+  }
+  .diagram-panel {
+    display: none;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 24px;
+    min-height: 300px;
+    overflow-x: auto;
+  }
+  .diagram-panel.active { display: block; }
+  .mermaid { background: transparent; }
+  .mermaid svg { max-width: 100%; }
+  .plugins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .plugin-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .plugin-card h3 {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: #58a6ff;
+  }
+  .plugin-card .desc {
+    color: #8b949e;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #484f58;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+  .hook {
+    font-size: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid #21262d;
+  }
+  .phase {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    background: #1c2333;
+    color: #58a6ff;
+  }
+  .matcher { color: #3fb950; font-size: 11px; }
+  .item { font-size: 12px; padding: 2px 0; }
+  .dim { color: #484f58; }
+  code {
+    background: #1c2333;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #e6edf3;
+  }
+  .footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #30363d;
+    font-size: 11px;
+    color: #484f58;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+<div class="brand-bar"></div>
+<div class="container">
+  <h1>Weaver <span>Architecture Explorer</span></h1>
+  <div class="subtitle">Auto-generated from codebase — 2026-04-17 13:02 UTC</div>
+
+  <h2>System Diagrams</h2>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('highlevel')">High Level</div>
+    <div class="tab" onclick="showTab('hooks')">Hook Detail</div>
+    <div class="tab" onclick="showTab('dataflow')">Data Flow</div>
+    <div class="tab" onclick="showTab('lifecycle')">Session Lifecycle</div>
+  </div>
+
+  <div id="panel-highlevel" class="diagram-panel active">
+    <pre class="mermaid">graph TD
+    CC["Claude Code<br/>Tool Calls"]
+    boundary_segmenter["boundary-segmenter<br/><small>—</small>"]
+    CC --> boundary_segmenter
+    boundary_segmenter_out(["state/metrics.jsonl"])
+    boundary_segmenter --> boundary_segmenter_out
+    branch_workflow["branch-workflow<br/><small>—</small>"]
+    CC --> branch_workflow
+    branch_workflow_out(["state/metrics.jsonl"])
+    branch_workflow --> branch_workflow_out
+    capability_memory["capability-memory<br/><small>SessionStart</small>"]
+    CC --> capability_memory
+    capability_memory_out(["state/metrics.jsonl"])
+    capability_memory --> capability_memory_out
+    style capability_memory fill:#161b22,stroke:#8b949e,color:#e6edf3
+    ci_reader["ci-reader<br/><small>—</small>"]
+    CC --> ci_reader
+    ci_reader_out(["state/metrics.jsonl"])
+    ci_reader --> ci_reader_out
+    commit_intelligence["commit-intelligence<br/><small>—</small>"]
+    CC --> commit_intelligence
+    commit_intelligence_out(["state/metrics.jsonl"])
+    commit_intelligence --> commit_intelligence_out
+    full["full<br/><small>—</small>"]
+    CC --> full
+    full_out(["state/metrics.jsonl"])
+    full --> full_out
+    pr_lifecycle["pr-lifecycle<br/><small>—</small>"]
+    CC --> pr_lifecycle
+    pr_lifecycle_out(["state/metrics.jsonl"])
+    pr_lifecycle --> pr_lifecycle_out
+    weaver_gate["weaver-gate<br/><small>PreToolUse</small>"]
+    CC --> weaver_gate
+    weaver_gate_out(["state/metrics.jsonl"])
+    weaver_gate --> weaver_gate_out
+    style weaver_gate fill:#161b22,stroke:#58a6ff,color:#e6edf3
+    weaver_learning["weaver-learning<br/><small>—</small>"]
+    CC --> weaver_learning
+    weaver_learning_out(["state/metrics.jsonl"])
+    weaver_learning --> weaver_learning_out
+    style CC fill:#0d1117,stroke:#bc8cff,color:#e6edf3</pre>
+  </div>
+  <div id="panel-hooks" class="diagram-panel">
+    <pre class="mermaid">graph LR
+    subgraph boundary_segmenter["boundary-segmenter"]
+    end
+    subgraph branch_workflow["branch-workflow"]
+    end
+    subgraph capability_memory["capability-memory"]
+        capability_memory_h0_trigger["SessionStart<br/>*"]
+        capability_memory_h0_script["load-capability-registry.sh<br/><small>timeout: 10s</small>"]
+        capability_memory_h0_trigger --> capability_memory_h0_script
+    end
+    subgraph ci_reader["ci-reader"]
+    end
+    subgraph commit_intelligence["commit-intelligence"]
+    end
+    subgraph full["full"]
+    end
+    subgraph pr_lifecycle["pr-lifecycle"]
+    end
+    subgraph weaver_gate["weaver-gate"]
+        weaver_gate_h0_trigger["PreToolUse<br/>Bash"]
+        weaver_gate_h0_script["inspect-git-command.sh<br/><small>timeout: 5s</small>"]
+        weaver_gate_h0_trigger --> weaver_gate_h0_script
+    end
+    subgraph weaver_learning["weaver-learning"]
+    end</pre>
+  </div>
+  <div id="panel-dataflow" class="diagram-panel">
+    <pre class="mermaid">graph TB
+    subgraph inputs["Tool Calls"]
+        Bash["Bash"]
+        Read["Read"]
+        Write["Write / Edit"]
+        Glob["Glob / Grep"]
+    end
+    boundary_segmenter_metrics["boundary-segmenter/state/metrics.jsonl<br/><small>weaver.task.boundary.detected</small>"]
+    branch_workflow_metrics["branch-workflow/state/metrics.jsonl<br/><small>weaver.workflow.detected<br/>weaver.branch.created</small>"]
+    capability_memory_metrics["capability-memory/state/metrics.jsonl<br/><small>capability_loaded<br/>gitlab_version_probed</small>"]
+    ci_reader_metrics["ci-reader/state/metrics.jsonl<br/><small>weaver.ci.status.observed</small>"]
+    commit_intelligence_metrics["commit-intelligence/state/metrics.jsonl<br/><small>weaver.commit.drafted<br/>weaver.commit.committed</small>"]
+    full_metrics["full/state/metrics.jsonl<br/><small></small>"]
+    pr_lifecycle_metrics["pr-lifecycle/state/metrics.jsonl<br/><small>weaver.pr.drafted<br/>weaver.pr.ready<br/>weaver.pr.merged</small>"]
+    weaver_gate_metrics["weaver-gate/state/metrics.jsonl<br/><small>weaver.destructive.detected<br/>weaver.destructive.confirmed</small>"]
+    Bash --> weaver_gate_metrics
+    weaver_learning_metrics["weaver-learning/state/metrics.jsonl<br/><small>priors_loaded<br/>preferences_checkpointed</small>"]
+    bus["🌐 mcp-event-bus<br/>Cross-plugin coordination"]
+    boundary_segmenter_metrics --> bus
+    branch_workflow_metrics --> bus
+    capability_memory_metrics --> bus
+    ci_reader_metrics --> bus
+    commit_intelligence_metrics --> bus
+    full_metrics --> bus
+    pr_lifecycle_metrics --> bus
+    weaver_gate_metrics --> bus
+    weaver_learning_metrics --> bus</pre>
+  </div>
+  <div id="panel-lifecycle" class="diagram-panel">
+    <pre class="mermaid">graph TD
+    start(["Session Start"]) --> turns
+    subgraph turns["Active Session"]
+        t1["Turn N: Tool Call"]
+        t1 --> pre["PreToolUse<br/>weaver-gate"]
+        pre --> exec["Tool Executes"]
+        exec --> t1
+    end</pre>
+  </div>
+
+  <h2>Plugin Components</h2>
+  <div class="plugins-grid">
+    
+        <div class="plugin-card">
+          <h3>boundary-segmenter</h3>
+          <p class="desc">W2 — Jaccard-Cosine Boundary Segmentation. The defining engine. Clusters PostToolUse(Edit|Write) events into task boundaries using multi-modal distance (file-set Jaccard + Hornet V1 semantic-diff cosine + idle-time gap). Not yet implemented — Phase 2.</p>
+          <div class="section-label">Hooks</div>
+          <div class="dim">None</div>
+          <div class="section-label">Skills</div>
+          <div class="dim">None</div>
+          <div class="section-label">Agents</div>
+          <div class="dim">None</div>
+          <div class="section-label">Commands</div>
+          <div class="dim">None</div>
+        </div>
+        <div class="plugin-card">
+          <h3>branch-workflow</h3>
+          <p class="desc">W3 — Workflow-Pattern Classifier. Infers the active branching model (GitHub Flow / Trunk-Based / GitFlow / Release Flow / Stacked Diffs) from repo signals and drives branch creation. Not yet implemented — Phase 2.</p>
+          <div class="section-label">Hooks</div>
+          <div class="dim">None</div>
+          <div class="section-label">Skills</div>
+          <div class="dim">None</div>
+          <div class="section-label">Agents</div>
+          <div class="dim">None</div>
+          <div class="section-label">Commands</div>
+          <div class="dim">None</div>
+        </div>
+        <div class="plugin-card">
+          <h3>capability-memory</h3>
+          <p class="desc">Provider capability registry — the 'memory' of how each git host behaves. Ships baseline data for 9 hosts (GitHub, GitLab, Bitbucket Cloud/DC, Azure DevOps, Gitea/Forgejo/Codeberg, AWS CodeCommit, SourceHut); refreshed nightly by CI and probed at runtime for GitLab self-managed version drift.</p>
+          <div class="section-label">Hooks</div>
+          <div class="hook"><span class="phase">SessionStart</span> <span class="matcher">*</span> → <code>load-capability-registry.sh</code> <span class="dim">(10s)</span></div>
+          <div class="section-label">Skills</div>
+          <div class="dim">None</div>
+          <div class="section-label">Agents</div>
+          <div class="dim">None</div>
+          <div class="section-label">Commands</div>
+          <div class="dim">None</div>
+        </div>
+        <div class="plugin-card">
+          <h3>ci-reader</h3>
+          <p class="desc">Read-only status + log-stream across GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone/Woodpecker, Tekton, and ArgoCD/FluxCD. Weaver reads; Assembler runs. Not yet implemented — Phase 2.</p>
+          <div class="section-label">Hooks</div>
+          <div class="dim">None</div>
+          <div class="section-label">Skills</div>
+          <div class="dim">None</div>
+          <div class="section-label">Agents</div>
+          <div class="dim">None</div>
+          <div class="section-label">Commands</div>
+          <div class="dim">None</div>
+        </div>
+        <div class="plugin-card">
+          <h3>commit-intelligence</h3>
+          <p class="desc">W1 — Myers-Diff Conventional Classifier. Drafts Conventional Commits messages via a Sonnet agent (Stage 1), validates format + policy via a Haiku agent and a Python stdlib rules pass (Stage 2). Safe-amend detection blocks rewriting pushed commits.</p>
+          <div class="section-label">Hooks</div>
+          <div class="dim">None</div>
+          <div class="section-label">Skills</div>
+          <div class="dim">None</div>
+          <div class="section-label">Agents</div>
+          <div class="item"><strong>commit-drafter</strong> <span class="dim">(claude-sonnet-4-6, narrow)</span></div><div class="item"><strong>message-validator</strong> <span class="dim">(claude-haiku-4-5, narrow)</span></div>
+          <div class="section-label">Commands</div>
+          <div class="item"><code>weaver:commit</code></div>
+        </div>
+        <div class="plugin-card">
+          <h3>full</h3>
+          <p class="desc">Meta-plugin that installs every Weaver plugin at once via dependency resolution. Installs: commit-intelligence, boundary-segmenter, branch-workflow, pr-lifecycle, weaver-gate, capability-memory, ci-reader, weaver-learning.</p>
+          <div class="section-label">Hooks</div>
+          <div class="dim">None</div>
+          <div class="section-label">Skills</div>
+          <div class="dim">None</div>
+          <div class="section-label">Agents</div>
+          <div class="dim">None</div>
+          <div class="section-label">Commands</div>
+          <div class="dim">None</div>
+        </div>
+        <div class="plugin-card">
+          <h3>pr-lifecycle</h3>
+          <p class="desc">W4 — Path-History Reviewer Routing + idempotent PR state machine. Opens draft PRs with Hornet-V4 session-context descriptions, ranks reviewers from blame + CODEOWNERS + availability events, drives merge-queue integration. Not yet implemented — Phase 2.</p>
+          <div class="section-label">Hooks</div>
+          <div class="dim">None</div>
+          <div class="section-label">Skills</div>
+          <div class="dim">None</div>
+          <div class="section-label">Agents</div>
+          <div class="dim">None</div>
+          <div class="section-label">Commands</div>
+          <div class="dim">None</div>
+        </div>
+        <div class="plugin-card">
+          <h3>weaver-gate</h3>
+          <p class="desc">Destructive-op decision-gate for git. Inspects every Bash invocation; routes force-push, history rewrite, branch/tag deletion, clean -fdx, and merge-queue bypass through a confirmation surface before execution.</p>
+          <div class="section-label">Hooks</div>
+          <div class="hook"><span class="phase">PreToolUse</span> <span class="matcher">Bash</span> → <code>inspect-git-command.sh</code> <span class="dim">(5s)</span></div>
+          <div class="section-label">Skills</div>
+          <div class="item"><strong>destructive-gate-confirmation</strong></div>
+          <div class="section-label">Agents</div>
+          <div class="dim">None</div>
+          <div class="section-label">Commands</div>
+          <div class="item"><code>weaver:dry-run</code></div>
+        </div>
+        <div class="plugin-card">
+          <h3>weaver-learning</h3>
+          <p class="desc">W5 — Gauss Learning (Weaver). Developer preference persistence via Allay-A4 atomic serialization. Tracks commit-style acceptance rates, branch-naming choices, PR turnaround. Exports to shared/learnings.json. Not yet implemented — Phase 2.</p>
+          <div class="section-label">Hooks</div>
+          <div class="dim">None</div>
+          <div class="section-label">Skills</div>
+          <div class="dim">None</div>
+          <div class="section-label">Agents</div>
+          <div class="dim">None</div>
+          <div class="section-label">Commands</div>
+          <div class="dim">None</div>
+        </div>
+  </div>
+
+  <div class="footer">
+    <span>Generated by docs/architecture/generate.py from plugin.json, hooks.json, SKILL.md, agents/*.md</span>
+    <span>Weaver v0.0.1</span>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#161b22',
+      primaryColor: '#1c2333',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#30363d',
+      lineColor: '#484f58',
+      secondaryColor: '#161b22',
+      tertiaryColor: '#1c2333',
+    }
+  });
+
+  function showTab(id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.diagram-panel').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('panel-' + id).classList.add('active');
+
+    // Re-render mermaid for newly visible panels
+    const panel = document.getElementById('panel-' + id);
+    const pre = panel.querySelector('.mermaid');
+    if (pre && !pre.getAttribute('data-processed')) {
+      mermaid.run({ nodes: [pre] });
+    }
+  }
+</script>
+</body>
+</html>

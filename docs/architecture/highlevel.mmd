@@ -1,0 +1,41 @@
+graph TD
+    CC["Claude Code<br/>Tool Calls"]
+    boundary_segmenter["boundary-segmenter<br/><small>—</small>"]
+    CC --> boundary_segmenter
+    boundary_segmenter_out(["state/metrics.jsonl"])
+    boundary_segmenter --> boundary_segmenter_out
+    branch_workflow["branch-workflow<br/><small>—</small>"]
+    CC --> branch_workflow
+    branch_workflow_out(["state/metrics.jsonl"])
+    branch_workflow --> branch_workflow_out
+    capability_memory["capability-memory<br/><small>SessionStart</small>"]
+    CC --> capability_memory
+    capability_memory_out(["state/metrics.jsonl"])
+    capability_memory --> capability_memory_out
+    style capability_memory fill:#161b22,stroke:#8b949e,color:#e6edf3
+    ci_reader["ci-reader<br/><small>—</small>"]
+    CC --> ci_reader
+    ci_reader_out(["state/metrics.jsonl"])
+    ci_reader --> ci_reader_out
+    commit_intelligence["commit-intelligence<br/><small>—</small>"]
+    CC --> commit_intelligence
+    commit_intelligence_out(["state/metrics.jsonl"])
+    commit_intelligence --> commit_intelligence_out
+    full["full<br/><small>—</small>"]
+    CC --> full
+    full_out(["state/metrics.jsonl"])
+    full --> full_out
+    pr_lifecycle["pr-lifecycle<br/><small>—</small>"]
+    CC --> pr_lifecycle
+    pr_lifecycle_out(["state/metrics.jsonl"])
+    pr_lifecycle --> pr_lifecycle_out
+    weaver_gate["weaver-gate<br/><small>PreToolUse</small>"]
+    CC --> weaver_gate
+    weaver_gate_out(["state/metrics.jsonl"])
+    weaver_gate --> weaver_gate_out
+    style weaver_gate fill:#161b22,stroke:#58a6ff,color:#e6edf3
+    weaver_learning["weaver-learning<br/><small>—</small>"]
+    CC --> weaver_learning
+    weaver_learning_out(["state/metrics.jsonl"])
+    weaver_learning --> weaver_learning_out
+    style CC fill:#0d1117,stroke:#bc8cff,color:#e6edf3

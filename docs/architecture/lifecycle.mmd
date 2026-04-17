@@ -1,0 +1,8 @@
+graph TD
+    start(["Session Start"]) --> turns
+    subgraph turns["Active Session"]
+        t1["Turn N: Tool Call"]
+        t1 --> pre["PreToolUse<br/>weaver-gate"]
+        pre --> exec["Tool Executes"]
+        exec --> t1
+    end
