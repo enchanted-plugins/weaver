@@ -1,0 +1,57 @@
+{
+  "name": "weaver",
+  "display_name": "Weaver — Git Workflow Layer",
+  "description": "Auto-orchestrates branch/commit/PR per task boundary; reads CI status across 9 hosts and 8 CI systems. Enchanted-plugins Phase 4 plugin #21.",
+  "version": "0.0.1",
+  "license": "MIT",
+  "homepage": "https://github.com/enchanted-plugins/weaver",
+  "author": "enchanted-plugins",
+  "plugins": [
+    {
+      "name": "commit-intelligence",
+      "description": "W1 — Myers-Diff Conventional Classifier. Drafts + validates Conventional Commits messages via Sonnet→Haiku pipeline."
+    },
+    {
+      "name": "boundary-segmenter",
+      "description": "W2 — Jaccard-Cosine Boundary Segmentation (defining engine). Clusters PostToolUse(Edit|Write) events into task boundaries."
+    },
+    {
+      "name": "branch-workflow",
+      "description": "W3 — Workflow-Pattern Classifier. Detects branching model per (sub)tree and drives branch creation."
+    },
+    {
+      "name": "pr-lifecycle",
+      "description": "W4 — Path-History Reviewer Routing. Idempotent PR state machine + reviewer ranking from blame + CODEOWNERS + Hornet availability."
+    },
+    {
+      "name": "weaver-gate",
+      "description": "Destructive-op decision-gate modeled after Hornet's pattern. Routes force-push, history-rewrite, branch/tag deletion, clean -fdx, merge-queue bypass."
+    },
+    {
+      "name": "capability-memory",
+      "description": "Provider capability registry — the host 'memory'. Hardcoded baseline + nightly CI refresh + GitLab self-managed runtime probe."
+    },
+    {
+      "name": "ci-reader",
+      "description": "Read-only status + log-stream across GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone/Woodpecker, Tekton, ArgoCD/FluxCD. Weaver reads; Assembler runs."
+    },
+    {
+      "name": "weaver-learning",
+      "description": "W5 — Gauss Learning (Weaver). Developer preference persistence across sessions via Allay-A4 atomic serialization."
+    },
+    {
+      "name": "full",
+      "description": "Meta-plugin. Declares the other 8 as dependencies so one install pulls in the whole chain.",
+      "dependencies": [
+        "commit-intelligence",
+        "boundary-segmenter",
+        "branch-workflow",
+        "pr-lifecycle",
+        "weaver-gate",
+        "capability-memory",
+        "ci-reader",
+        "weaver-learning"
+      ]
+    }
+  ]
+}

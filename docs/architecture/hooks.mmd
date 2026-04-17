@@ -1,0 +1,25 @@
+graph LR
+    subgraph boundary_segmenter["boundary-segmenter"]
+    end
+    subgraph branch_workflow["branch-workflow"]
+    end
+    subgraph capability_memory["capability-memory"]
+        capability_memory_h0_trigger["SessionStart<br/>*"]
+        capability_memory_h0_script["load-capability-registry.sh<br/><small>timeout: 10s</small>"]
+        capability_memory_h0_trigger --> capability_memory_h0_script
+    end
+    subgraph ci_reader["ci-reader"]
+    end
+    subgraph commit_intelligence["commit-intelligence"]
+    end
+    subgraph full["full"]
+    end
+    subgraph pr_lifecycle["pr-lifecycle"]
+    end
+    subgraph weaver_gate["weaver-gate"]
+        weaver_gate_h0_trigger["PreToolUse<br/>Bash"]
+        weaver_gate_h0_script["inspect-git-command.sh<br/><small>timeout: 5s</small>"]
+        weaver_gate_h0_trigger --> weaver_gate_h0_script
+    end
+    subgraph weaver_learning["weaver-learning"]
+    end

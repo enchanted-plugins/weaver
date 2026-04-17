@@ -1,0 +1,37 @@
+# Secrets
+.env
+.env.local
+
+# Claude Code local config (per-machine)
+.claude/
+
+# Weaver plugin state (runtime-generated — seeded data is committed explicitly)
+plugins/*/state/audit.jsonl
+plugins/*/state/metrics.jsonl
+plugins/*/state/boundary-clusters.json
+plugins/*/state/workflow-map.json
+plugins/*/state/learnings.json
+plugins/*/state/session-cache/
+
+# Lock directories (atomic mkdir pattern)
+*.lock/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Temp files
+*.tmp
+
+# Asset toolchain (if docs/assets ever uses mermaid-cli + puppeteer)
+docs/assets/node_modules/
+docs/assets/package-lock.json
+docs/assets/package.json
+
+# Editor
+.vscode/
+.idea/
