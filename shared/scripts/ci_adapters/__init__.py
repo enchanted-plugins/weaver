@@ -127,26 +127,40 @@ def detect_system(repo_root) -> list[str]:
 
 
 def get_adapter(system_id: str) -> CIAdapter:
-    """Factory: return adapter for a system id. Raises KeyError for unknowns."""
-    from . import github_actions as _gha
-    from . import stubs as _stubs
+    """Factory: return adapter for a system id. Raises KeyError for unknowns.
 
+    All 10 CI systems have real implementations. Availability is gated by
+    credentials / tooling (tokens, kubectl context) via is_available().
+    """
     if system_id == "github-actions":
+        from . import github_actions as _gha
         return _gha.GitHubActionsAdapter()
+    if system_id == "gitlab-ci":
+        from . import gitlab_ci as _gl
+        return _gl.GitLabCIAdapter()
+    if system_id == "circleci":
+        from . import circleci as _cc
+        return _cc.CircleCIAdapter()
+    if system_id == "jenkins":
+        from . import jenkins as _j
+        return _j.JenkinsAdapter()
+    if system_id == "buildkite":
+        from . import buildkite as _bk
+        return _bk.BuildkiteAdapter()
+    if system_id == "drone":
+        from . import drone_woodpecker as _dw
+        return _dw.DroneAdapter()
+    if system_id == "woodpecker":
+        from . import drone_woodpecker as _dw
+        return _dw.WoodpeckerAdapter()
+    if system_id == "tekton":
+        from . import k8s as _k
+        return _k.TektonAdapter()
+    if system_id == "argocd":
+        from . import k8s as _k
+        return _k.ArgoCDAdapter()
+    if system_id == "fluxcd":
+        from . import k8s as _k
+        return _k.FluxCDAdapter()
 
-    stub = {
-        "gitlab-ci": _stubs.GitLabCIAdapter,
-        "circleci": _stubs.CircleCIAdapter,
-        "jenkins": _stubs.JenkinsAdapter,
-        "buildkite": _stubs.BuildkiteAdapter,
-        "drone": _stubs.DroneAdapter,
-        "woodpecker": _stubs.WoodpeckerAdapter,
-        "tekton": _stubs.TektonAdapter,
-        "argocd": _stubs.ArgoCDAdapter,
-        "fluxcd": _stubs.FluxCDAdapter,
-    }.get(system_id)
-
-    if stub is None:
-        raise KeyError(f"unknown CI system: {system_id}")
-
-    return stub()
+    raise KeyError(f"unknown CI system: {system_id}")
