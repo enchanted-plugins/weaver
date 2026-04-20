@@ -46,6 +46,7 @@ The question this plugin answers: *How does this ship?*
 
 - [The Numbers](#the-numbers)
 - [How It Works](#how-it-works)
+- [The Full Lifecycle](#the-full-lifecycle)
 - [Install](#install)
 - [What You Get Per Session](#what-you-get-per-session)
 - [The Science Behind Weaver](#the-science-behind-weaver)
@@ -88,6 +89,103 @@ Weaver runs inside your Claude Code session and drives git on your behalf:
 - **Merges.** Strategy inferred from workflow; merge-queue-enqueues where configured.
 - **Guards destructive ops.** weaver-gate intercepts `PreToolUse(Bash)` — force-push / filter-branch / clean -fdx / rebase-i-of-pushed etc. route through a Hornet-style decision-gate before they can run.
 - **Learns.** W5 Gauss EMA adapts priors per-developer. Past sample 10, the defaults give way to what you actually do.
+
+<p align="center">
+  <a href="docs/assets/pipeline.mmd" title="View pipeline source (Mermaid)">
+    <img src="docs/assets/pipeline.svg"
+         alt="Weaver nine-subplugin architecture blueprint — Claude Code session input, boundary-segmenter (W2, defining engine), commit-intelligence + branch-workflow + pr-lifecycle (W1+W3+W4), weaver-gate + capability-memory + ci-reader + weaver-learning (W5) support row, enchanted-mcp bus events, and peer-plugin reaction legend"
+         width="100%" style="max-width: 1100px;">
+  </a>
+</p>
+
+<sub align="center">
+
+Source: [docs/assets/pipeline.mmd](docs/assets/pipeline.mmd) · Regeneration command in [docs/assets/README.md](docs/assets/README.md).
+
+</sub>
+
+## The Full Lifecycle
+
+A tool call flows through Weaver in five stages top-to-bottom: **SessionStart** (Haiku) loads the provider registry via `capability-memory`; **PreToolUse(Bash)** (Haiku) gates destructive ops via `weaver-gate`; **PostToolUse(Edit|Write)** (Sonnet) clusters edits via W2 Jaccard-Cosine boundary segmentation; on boundary close, the **commit + PR** stage (Sonnet) runs W3/W1/W4 to auto-branch, auto-commit, and open a draft PR with ranked reviewers; **PreCompact** (Sonnet) persists developer preferences via W5 Gauss Learning. The orthogonal `ci-reader` poll feeds W4's merge-queue gate.
+
+<p align="center">
+  <a href="docs/assets/lifecycle.mmd" title="View lifecycle source (Mermaid)">
+    <img src="docs/assets/lifecycle.svg"
+         alt="Weaver session lifecycle blueprint — 5 stages: SessionStart (capability-memory), PreToolUse/Bash (weaver-gate), PostToolUse/Edit|Write (boundary-segmenter W2), Commit+PR (branch-workflow W3 + commit-intelligence W1 + pr-lifecycle W4), PreCompact (weaver-learning W5), plus orthogonal ci-reader poll feeding W4's merge-queue gate"
+         width="100%" style="max-width: 1100px;">
+  </a>
+</p>
+
+<sub align="center">
+
+Source: [docs/assets/lifecycle.mmd](docs/assets/lifecycle.mmd) · Regeneration command in [docs/assets/README.md](docs/assets/README.md).
+
+</sub>
+
+---
+
+## Install
+
+Two commands in Claude Code + one per project:
+
+```
+/plugin marketplace add enchanted-plugins/weaver
+/plugin install full@weaver
+```
+
+Then, from inside the repo you want to use Weaver on:
+
+```
+/weaver:setup
+```
+
+`/weaver:setup` is the **auto-configurator**: it runs `git remote get-url origin`, maps the URL to one of the 10 supported hosts, and does **only** the work that host needs — auto-installing the right tool via your platform's package manager (`winget` on Windows, `brew` on macOS, `apt`/`dnf`/`pacman` on Linux) and walking you through exactly one token prompt when required. No manual shell steps. No forced `gh` install if you're on GitLab.
+
+If you skip setup entirely, Weaver runs in degraded mode — commit drafting + W2 task-boundary clustering + the destructive-op gate all work without any host credentials. Only PR opening / merging needs the host token.
+
+<details>
+<summary>What `/weaver:setup` does per host</summary>
+
+| Host | What gets configured |
+|---|---|
+| GitHub | Uses the existing git-credential-manager token if present (the same one that authorizes `git push`). Otherwise offers to install `gh` + run `gh auth login`. |
+| GitLab | Prompts for a PAT (api + write_repository scopes), stores via `git credential approve`. Handles self-managed via prompted api_base. |
+| Bitbucket Cloud | Prompts for a Repository Access Token (App Passwords are deprecated). |
+| Bitbucket Data Center | Prompts for api_base + HTTP PAT. |
+| Azure DevOps | Prompts for PAT (Code + Pull Request scopes), org, project. |
+| Gitea / Forgejo / Codeberg | Prompts for api_base + PAT. |
+| AWS CodeCommit | Auto-installs `aws` CLI if missing; runs `aws configure` if no IAM identity resolves. |
+| SourceHut | Configures the project's mailing-list address + `git send-email` OR SMTP credentials. |
+
+</details>
+
+---
+
+## What You Get Per Session
+
+```
+plugins/boundary-segmenter/state/
+├── boundary-clusters.json           W2 rolling cluster state, survives compaction
+└── boundary-events.jsonl            Every fired task boundary, append-only
+
+plugins/weaver-gate/state/
+└── audit.jsonl                      Every gated/blocked destructive op
+
+plugins/capability-memory/state/
+└── capability-registry.json         10-host capability data, nightly-refreshed
+
+plugins/weaver-learning/state/
+├── learnings.json                   W5 EMA priors, cross-session
+└── priors.json                      Session-cached slice downstream engines read
+
+plugins/commit-intelligence/state/
+└── metrics.jsonl                    Per-commit W1 classification metrics
+
+plugins/pr-lifecycle/state/
+└── last-reviewer-suggestion.json    W4's last blame-graph reviewer ranking
+```
+
+Everything event-sourced, JSONL where applicable, atomic where writes matter (Allay-A4 tempfile + rename + fsync). All state dirs gitignored; `.gitkeep` sentinels only.
 
 ---
 
@@ -201,68 +299,31 @@ Every gated op is audited to `plugins/weaver-gate/state/audit.jsonl` — append-
 
 ---
 
-## Install
+## Verification
 
-Two commands in Claude Code + one per project:
-
-```
-/plugin marketplace add enchanted-plugins/weaver
-/plugin install full@weaver
-```
-
-Then, from inside the repo you want to use Weaver on:
-
-```
-/weaver:setup
-```
-
-`/weaver:setup` is the **auto-configurator**: it runs `git remote get-url origin`, maps the URL to one of the 10 supported hosts, and does **only** the work that host needs — auto-installing the right tool via your platform's package manager (`winget` on Windows, `brew` on macOS, `apt`/`dnf`/`pacman` on Linux) and walking you through exactly one token prompt when required. No manual shell steps. No forced `gh` install if you're on GitLab.
-
-If you skip setup entirely, Weaver runs in degraded mode — commit drafting + W2 task-boundary clustering + the destructive-op gate all work without any host credentials. Only PR opening / merging needs the host token.
-
-<details>
-<summary>What `/weaver:setup` does per host</summary>
-
-| Host | What gets configured |
-|---|---|
-| GitHub | Uses the existing git-credential-manager token if present (the same one that authorizes `git push`). Otherwise offers to install `gh` + run `gh auth login`. |
-| GitLab | Prompts for a PAT (api + write_repository scopes), stores via `git credential approve`. Handles self-managed via prompted api_base. |
-| Bitbucket Cloud | Prompts for a Repository Access Token (App Passwords are deprecated). |
-| Bitbucket Data Center | Prompts for api_base + HTTP PAT. |
-| Azure DevOps | Prompts for PAT (Code + Pull Request scopes), org, project. |
-| Gitea / Forgejo / Codeberg | Prompts for api_base + PAT. |
-| AWS CodeCommit | Auto-installs `aws` CLI if missing; runs `aws configure` if no IAM identity resolves. |
-| SourceHut | Configures the project's mailing-list address + `git send-email` OR SMTP credentials. |
-
-</details>
+- **28 test assertions** passing (`bash tests/run-all.sh`) — unit, contract, and integration tiers. JSON validation, bash syntax check, Python functional smoke, end-to-end hook simulation.
+- **1 live integration test** (`WEAVER_INTEGRATION=1 bash tests/run-all.sh`) — creates a real branch on `enchanted-plugins/weaver`, opens a real draft PR via the urllib adapter path (no `gh` required), round-trips it via `get_pr`, closes it, deletes the branch. Proven against real GitHub.
+- **Contract test for every host** (`tests/pr-lifecycle/test-all-hosts-contract.sh`) — asserts every one of the 10 adapters instantiates cleanly, reports a bool `is_authenticated`, and refuses to fabricate a PR when credentials are absent.
+- **Honest numbers.** What's verified live: GitHub only. What's verified by contract: all 10 hosts + 10 CI systems. The README doesn't pretend otherwise. When you drop a GitLab/Bitbucket/Azure token in, you're using the same `_rest.api_request` call path that shipped through GitHub's real API. If something breaks there, it's in the per-host JSON shape, not the flow.
 
 ---
 
-## What You Get Per Session
+## vs Everything Else
 
-```
-plugins/boundary-segmenter/state/
-├── boundary-clusters.json           W2 rolling cluster state, survives compaction
-└── boundary-events.jsonl            Every fired task boundary, append-only
+| | Husky | pre-commit | commitizen | Graphite | `gh` alone | **Weaver** |
+|---|---|---|---|---|---|---|
+| Works without `node_modules` | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| Conventional Commits drafting | ✗ | ✗ | manual | ✗ | ✗ | **Sonnet draft + Haiku validate** |
+| Task boundary detection | ✗ | ✗ | ✗ | timer only | ✗ | **W2 multi-signal (Jaccard + cosine + idle)** |
+| Branch workflow detection | ✗ | ✗ | ✗ | GitHub Flow assumed | ✗ | **W3 per-subtree classifier** |
+| Reviewer routing | ✗ | ✗ | ✗ | CODEOWNERS only | manual | **W4 blame × CODEOWNERS × availability, capped at 3** |
+| Per-developer learning | ✗ | ✗ | ✗ | ✗ | ✗ | **W5 Gauss EMA** |
+| Force-push gate | ✗ | ✗ | ✗ | ✗ | ✗ | **Hornet-pattern decision-gate** |
+| Multi-host | github-only | any | any | github+gitlab | github-only | **10 hosts** |
+| Multi-CI | n/a | n/a | n/a | n/a | github-only | **10 systems** |
+| Zero runtime deps | ✗ npm | ✓ python | ✗ npm | ✗ node | ✓ | ✓ |
 
-plugins/weaver-gate/state/
-└── audit.jsonl                      Every gated/blocked destructive op
-
-plugins/capability-memory/state/
-└── capability-registry.json         10-host capability data, nightly-refreshed
-
-plugins/weaver-learning/state/
-├── learnings.json                   W5 EMA priors, cross-session
-└── priors.json                      Session-cached slice downstream engines read
-
-plugins/commit-intelligence/state/
-└── metrics.jsonl                    Per-commit W1 classification metrics
-
-plugins/pr-lifecycle/state/
-└── last-reviewer-suggestion.json    W4's last blame-graph reviewer ranking
-```
-
-Everything event-sourced, JSONL where applicable, atomic where writes matter (Allay-A4 tempfile + rename + fsync). All state dirs gitignored; `.gitkeep` sentinels only.
+Weaver isn't replacing git. It's **the layer above it** that you were building piece-by-piece in every project anyway.
 
 ---
 
@@ -294,34 +355,6 @@ npx -y -p @mermaid-js/mermaid-cli mmdc -i docs/architecture/highlevel.mmd \
 ```
 
 </details>
-
----
-
-## Verification
-
-- **28 test assertions** passing (`bash tests/run-all.sh`) — unit, contract, and integration tiers. JSON validation, bash syntax check, Python functional smoke, end-to-end hook simulation.
-- **1 live integration test** (`WEAVER_INTEGRATION=1 bash tests/run-all.sh`) — creates a real branch on `enchanted-plugins/weaver`, opens a real draft PR via the urllib adapter path (no `gh` required), round-trips it via `get_pr`, closes it, deletes the branch. Proven against real GitHub.
-- **Contract test for every host** (`tests/pr-lifecycle/test-all-hosts-contract.sh`) — asserts every one of the 10 adapters instantiates cleanly, reports a bool `is_authenticated`, and refuses to fabricate a PR when credentials are absent.
-- **Honest numbers.** What's verified live: GitHub only. What's verified by contract: all 10 hosts + 10 CI systems. The README doesn't pretend otherwise. When you drop a GitLab/Bitbucket/Azure token in, you're using the same `_rest.api_request` call path that shipped through GitHub's real API. If something breaks there, it's in the per-host JSON shape, not the flow.
-
----
-
-## vs Everything Else
-
-| | Husky | pre-commit | commitizen | Graphite | `gh` alone | **Weaver** |
-|---|---|---|---|---|---|---|
-| Works without `node_modules` | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ |
-| Conventional Commits drafting | ✗ | ✗ | manual | ✗ | ✗ | **Sonnet draft + Haiku validate** |
-| Task boundary detection | ✗ | ✗ | ✗ | timer only | ✗ | **W2 multi-signal (Jaccard + cosine + idle)** |
-| Branch workflow detection | ✗ | ✗ | ✗ | GitHub Flow assumed | ✗ | **W3 per-subtree classifier** |
-| Reviewer routing | ✗ | ✗ | ✗ | CODEOWNERS only | manual | **W4 blame × CODEOWNERS × availability, capped at 3** |
-| Per-developer learning | ✗ | ✗ | ✗ | ✗ | ✗ | **W5 Gauss EMA** |
-| Force-push gate | ✗ | ✗ | ✗ | ✗ | ✗ | **Hornet-pattern decision-gate** |
-| Multi-host | github-only | any | any | github+gitlab | github-only | **10 hosts** |
-| Multi-CI | n/a | n/a | n/a | n/a | github-only | **10 systems** |
-| Zero runtime deps | ✗ npm | ✓ python | ✗ npm | ✗ node | ✓ | ✓ |
-
-Weaver isn't replacing git. It's **the layer above it** that you were building piece-by-piece in every project anyway.
 
 ---
 
