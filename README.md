@@ -56,10 +56,10 @@ The question this plugin answers: *How does this ship?*
 - [10 Git Hosts, All Real](#10-git-hosts-all-real)
 - [10 CI Systems, All Real](#10-ci-systems-all-real)
 - [The Decision-Gate Contract](#the-decision-gate-contract)
-- [Verification](#verification)
 - [vs Everything Else](#vs-everything-else)
 - [Agent Conduct (10 Modules)](#agent-conduct-10-modules)
 - [Architecture](#architecture)
+- [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -335,15 +335,6 @@ Every gated op is audited to `plugins/weaver-gate/state/audit.jsonl` — append-
 
 ---
 
-## Verification
-
-- **28 test assertions** passing (`bash tests/run-all.sh`) — unit, contract, and integration tiers. JSON validation, bash syntax check, Python functional smoke, end-to-end hook simulation.
-- **1 live integration test** (`WEAVER_INTEGRATION=1 bash tests/run-all.sh`) — creates a real branch on `enchanted-plugins/weaver`, opens a real draft PR via the urllib adapter path (no `gh` required), round-trips it via `get_pr`, closes it, deletes the branch. Proven against real GitHub.
-- **Contract test for every host** (`tests/pr-lifecycle/test-all-hosts-contract.sh`) — asserts every one of the 10 adapters instantiates cleanly, reports a bool `is_authenticated`, and refuses to fabricate a PR when credentials are absent.
-- **Honest numbers.** What's verified live: GitHub only. What's verified by contract: all 10 hosts + 10 CI systems. The README doesn't pretend otherwise. When you drop a GitLab/Bitbucket/Azure token in, you're using the same `_rest.api_request` call path that shipped through GitHub's real API. If something breaks there, it's in the per-host JSON shape, not the flow.
-
----
-
 ## vs Everything Else
 
 | | Husky | pre-commit | commitizen | Graphite | `gh` alone | **Weaver** |
@@ -410,6 +401,15 @@ npx -y -p @mermaid-js/mermaid-cli mmdc -i docs/architecture/highlevel.mmd \
 ```
 
 </details>
+
+---
+
+## Testing
+
+- **28 test assertions** passing (`bash tests/run-all.sh`) — unit, contract, and integration tiers. JSON validation, bash syntax check, Python functional smoke, end-to-end hook simulation.
+- **1 live integration test** (`WEAVER_INTEGRATION=1 bash tests/run-all.sh`) — creates a real branch on `enchanted-plugins/weaver`, opens a real draft PR via the urllib adapter path (no `gh` required), round-trips it via `get_pr`, closes it, deletes the branch. Proven against real GitHub.
+- **Contract test for every host** (`tests/pr-lifecycle/test-all-hosts-contract.sh`) — asserts every one of the 10 adapters instantiates cleanly, reports a bool `is_authenticated`, and refuses to fabricate a PR when credentials are absent.
+- **Honest numbers.** What's verified live: GitHub only. What's verified by contract: all 10 hosts + 10 CI systems. The README doesn't pretend otherwise. When you drop a GitLab/Bitbucket/Azure token in, you're using the same `_rest.api_request` call path that shipped through GitHub's real API. If something breaks there, it's in the per-host JSON shape, not the flow.
 
 ---
 
