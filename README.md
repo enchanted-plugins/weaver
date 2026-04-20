@@ -228,10 +228,6 @@ Expected: `/weaver:setup` classifies your host + CI + auth in one pass, promptin
 
 **Agent tier spread:** 3 Opus (boundary-detector, conflict-resolver, pr-description-crafter), 1 Sonnet (commit-drafter), 1 Haiku (message-validator) — orchestration on Opus, execution on Sonnet, validation on Haiku. See [CLAUDE.md](CLAUDE.md) for the tiering contract.
 
-## Roadmap
-
-Tracked in [docs/ROADMAP.md](docs/ROADMAP.md) and the shared [ecosystem map](https://github.com/enchanted-plugins/flux/blob/main/docs/ecosystem.md). For upcoming work specific to Weaver, see issues tagged [roadmap](https://github.com/enchanted-plugins/weaver/labels/roadmap). New host adapters, CI systems, and workflow classes are **not** breaking and land in minor releases; the ROADMAP captures engine-level changes.
-
 ## What You Get Per Session
 
 Four hook events fan out into six color-coded journals — one per sub-plugin whose state actually persists — and converge on the enchanted-mcp bus plus the 15-command query surface. Color maps engines to journals: blue = boundary-segmenter (W2) · amber = capability-memory · red = weaver-gate · yellow = commit-intelligence + pr-lifecycle (W1 + W4) · purple = weaver-learning (W5).
@@ -273,6 +269,12 @@ plugins/pr-lifecycle/state/
 ```
 
 Everything event-sourced, JSONL where applicable, atomic where writes matter (Allay-A4 tempfile + rename + fsync). All state dirs gitignored; `.gitkeep` sentinels only.
+
+---
+
+## Roadmap
+
+Tracked in [docs/ROADMAP.md](docs/ROADMAP.md) and the shared [ecosystem map](https://github.com/enchanted-plugins/flux/blob/main/docs/ecosystem.md). For upcoming work specific to Weaver, see issues tagged [roadmap](https://github.com/enchanted-plugins/weaver/labels/roadmap). New host adapters, CI systems, and workflow classes are **not** breaking and land in minor releases; the ROADMAP captures engine-level changes.
 
 ---
 
