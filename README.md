@@ -49,6 +49,7 @@ The question this plugin answers: *How does this ship?*
 - [What Makes Weaver Different](#what-makes-weaver-different)
 - [The Full Lifecycle](#the-full-lifecycle)
 - [Install](#install)
+- [8 Plugins, 5 Agents, 15 Commands](#8-plugins-5-agents-15-commands)
 - [What You Get Per Session](#what-you-get-per-session)
 - [The Science Behind Weaver](#the-science-behind-weaver)
 - [All 15 Workflows](#all-15-workflows)
@@ -180,6 +181,21 @@ If you skip setup entirely, Weaver runs in degraded mode — commit drafting + W
 </details>
 
 ---
+
+## 8 Plugins, 5 Agents, 15 Commands
+
+| Plugin | Command(s) | What | Agent (tier) |
+|--------|-----------|------|--------------|
+| capability-memory | `/weaver:setup` | SessionStart: probe git host + CI + provider registry; cache capabilities | — (hook + skill) |
+| boundary-segmenter | — (hook-only) | PostToolUse: W2 Jaccard-Cosine clusters edits into task boundaries | boundary-detector (Opus) |
+| branch-workflow | `/weaver:branch`, `/weaver:workflow-detect` | Scaffold branches matching the W3-classified workflow | — (skill) |
+| commit-intelligence | `/weaver:commit` | W1 Myers-Diff conventional-commits draft + policy validation + signing | commit-drafter (Sonnet), message-validator (Haiku) |
+| pr-lifecycle | `/weaver:pr`, `/weaver:status`, `/weaver:reviewers`, `/weaver:merge`, `/weaver:close`, `/weaver:release`, `/weaver:revert` | PR open / monitor / merge / release / revert | conflict-resolver (Opus), pr-description-crafter (Opus) |
+| ci-reader | `/weaver:ci-status`, `/weaver:retry-ci` | Normalize check runs across 10 CI systems; read-only | — |
+| weaver-gate | `/weaver:dry-run` | PreToolUse(Bash) advisory gate for destructive ops | — (hook) |
+| weaver-learning | `/weaver:learnings` | W5 Gauss EMA per-developer preference adaptation | — |
+
+**Agent tier spread:** 3 Opus (boundary-detector, conflict-resolver, pr-description-crafter), 1 Sonnet (commit-drafter), 1 Haiku (message-validator) — orchestration on Opus, execution on Sonnet, validation on Haiku. See [CLAUDE.md](CLAUDE.md) for the tiering contract.
 
 ## What You Get Per Session
 
