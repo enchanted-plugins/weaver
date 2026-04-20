@@ -45,16 +45,17 @@ The question this plugin answers: *How does this ship?*
 ## Contents
 
 - [The Numbers](#the-numbers)
-- [What It Actually Does](#what-it-actually-does)
-- [The Five Engines](#the-five-engines)
+- [How It Works](#how-it-works)
+- [Install](#install)
+- [What You Get Per Session](#what-you-get-per-session)
+- [The Science Behind Weaver](#the-science-behind-weaver)
 - [All 15 Workflows](#all-15-workflows)
 - [10 Git Hosts, All Real](#10-git-hosts-all-real)
 - [10 CI Systems, All Real](#10-ci-systems-all-real)
 - [The Decision-Gate Contract](#the-decision-gate-contract)
-- [Install](#install)
-- [What You Get Per Session](#what-you-get-per-session)
-- [Architecture](#architecture)
 - [Verification](#verification)
+- [vs Everything Else](#vs-everything-else)
+- [Architecture](#architecture)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -75,7 +76,7 @@ The question this plugin answers: *How does this ship?*
 
 ---
 
-## What It Actually Does
+## How It Works
 
 Weaver runs inside your Claude Code session and drives git on your behalf:
 
@@ -90,7 +91,7 @@ Weaver runs inside your Claude Code session and drives git on your behalf:
 
 ---
 
-## The Five Engines
+## The Science Behind Weaver
 
 | ID | Name | What it does | Algorithm |
 |----|------|--------------|-----------|
