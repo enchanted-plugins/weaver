@@ -4,52 +4,261 @@
   <a href="LICENSE.txt"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-3fb950?style=for-the-badge"></a>
   <img alt="8 plugins" src="https://img.shields.io/badge/Plugins-8-bc8cff?style=for-the-badge">
   <img alt="10 git hosts" src="https://img.shields.io/badge/Hosts-10-58a6ff?style=for-the-badge">
-  <img alt="8 CI systems" src="https://img.shields.io/badge/CI-8-d29922?style=for-the-badge">
-  <img alt="Jaccard-Cosine W2" src="https://img.shields.io/badge/Jaccard--Cosine-W2-f0883e?style=for-the-badge">
+  <img alt="10 CI systems" src="https://img.shields.io/badge/CI-10-d29922?style=for-the-badge">
+  <img alt="15 slash commands" src="https://img.shields.io/badge/Commands-15-f0883e?style=for-the-badge">
+  <img alt="5 named engines (W1-W5)" src="https://img.shields.io/badge/Engines-W1--W5-ff7b72?style=for-the-badge">
+  <img alt="28 tests passing" src="https://img.shields.io/badge/Tests-28%2F28-3fb950?style=for-the-badge">
+  <img alt="Zero runtime deps (bash plus jq plus Python stdlib)" src="https://img.shields.io/badge/Deps-0-f85149?style=for-the-badge">
 </p>
 
 > **An @enchanted-plugins product — algorithm-driven, agent-managed, self-learning.**
 
-The git-workflow layer of AI-assisted development. Observes your Claude Code session, finds task boundaries, branches, commits, and draft-PRs — autonomously. Silent when it works, loud when you're about to break something.
+Named after the **Weavers** of Hollow Knight — Hornet's ancestral kin who spun silk into patterns. Every branch is a thread; every merge stitches threads into a coherent history; every PR asks *does this thread fit the pattern?*
 
-**8 plugins. 5 named engines. 9 git hosts. 8 CI systems. One event bus.**
+**8 plugins. 5 named engines. 10 git hosts. 10 CI systems. 15 slash commands. Zero runtime deps.**
 
-> You ask Claude to "refactor the auth module and add OAuth PKCE."
+Built from the commit log of teams that ship: every flow exists because someone, somewhere, force-pushed their career off the edge.
+
+---
+
+> You edit three files. Weaver watches via `PostToolUse(Edit|Write)`.
 >
-> Weaver watched the edits. W2 detected two task boundaries — one for the refactor, one for the PKCE addition. Each became its own branch, each its own signed Conventional Commit. Two draft PRs opened, each with a Hornet-V4 session-context body, reviewers routed by W4 from blame + Hornet availability. When Assembler signalled green CI, both promoted to ready and enqueued on the GitHub Merge Queue.
+> **W2** clusters the edits — file-set Jaccard + Hornet-V1 cosine + idle-gap — and fires a task boundary at distance 0.81 (threshold 0.55).
+> **W3** classifies the repo as github-flow from the branch graph + protection rules + tag cadence. Creates `feat/oauth-pkce-verify`.
+> **W1** (Sonnet) drafts a Conventional Commits message: `feat(auth): add OAuth PKCE verify`. Haiku + Python validate: 72-char subject ✓, canonical type ✓, body under 72-char wrap ✓. Signed with SSH, DCO sign-off appended.
+> `git push -u origin feat/oauth-pkce-verify`. weaver-gate inspects — safe push, no block.
+> Opens a draft PR against main. Body composed from the W2 cluster + commits + Hornet V4 session continuity: "What changed", "Why", "How it was verified", "Rollback plan".
+> **W4** ranks reviewers from `git log` blame × recency × CODEOWNERS × Hornet availability. Top-3 requested: @dave (blame + CODEOWNERS), @alice (blame), @ben (CODEOWNERS).
+> Subscribes to Assembler's pipeline-status events. When all required checks go green, auto-enqueues on the GitHub Merge Queue.
+> **W5** records: scope "auth" seen, slug-style kebab confirmed, W4's top pick accepted.
 >
-> Time: the duration of your session. Manual git operations: zero. Destructive ops invoked: zero (W2 never rewrites pushed history).
+> You typed **0** git commands. Zero destructive ops triggered. Commits signed. PR reviewed and merged.
+
+Weaver is the git workflow layer you wrote yourself, if you'd had three months and a production-incident scar.
+
+---
 
 ## Contents
 
-- [How It Works](#how-it-works)
-- [What Makes Weaver Different](#what-makes-weaver-different)
-- [The Auto-Orchestration Flow](#the-auto-orchestration-flow)
+- [The Numbers](#the-numbers)
+- [What It Actually Does](#what-it-actually-does)
+- [The Five Engines](#the-five-engines)
+- [All 15 Workflows](#all-15-workflows)
+- [10 Git Hosts, All Real](#10-git-hosts-all-real)
+- [10 CI Systems, All Real](#10-ci-systems-all-real)
+- [The Decision-Gate Contract](#the-decision-gate-contract)
 - [Install](#install)
-- [8 Plugins, 5 Engines, 9 Hosts, 8 CI Systems](#8-plugins-5-engines-9-hosts-8-ci-systems)
-- [Destructive-Op Contract](#destructive-op-contract)
-- [Ecosystem Interactions](#ecosystem-interactions)
+- [What You Get Per Session](#what-you-get-per-session)
 - [Architecture](#architecture)
+- [Verification](#verification)
 - [Contributing](#contributing)
 - [License](#license)
 
-## How It Works
+## The Numbers
+
+| | Count |
+|---|---|
+| Plugins | 8 (+ `full` meta) |
+| Named algorithms | 5 (W1–W5) |
+| Git hosts supported | 10 |
+| CI systems supported | 10 |
+| Slash commands | 15 |
+| Destructive-op patterns classified | 10 |
+| Agents (Opus / Sonnet / Haiku) | 5 |
+| Test assertions | 28 passing |
+| Live-tested hosts | 1 (GitHub — opened + round-tripped + closed a real PR) |
+| Runtime dependencies | **0** (bash + jq + Python stdlib; `git-credential-manager`/`gh`/`aws`/`kubectl` are opt-in per adapter) |
+
+---
+
+## What It Actually Does
+
+Weaver runs inside your Claude Code session and drives git on your behalf:
+
+- **Watches every edit.** PostToolUse hooks feed W2 Jaccard-Cosine boundary segmentation. Logical tasks get clustered automatically.
+- **Scaffolds branches.** W3 detects your workflow (GitHub Flow / Trunk-Based / GitFlow / Release Flow / Stacked Diffs) and names branches to match (`feat/x`, `feature/x`, `user/x`, bare-topic).
+- **Drafts commits.** W1 Sonnet drafts a Conventional Commits message; Haiku + Python stdlib validate format + policy; SSH/GPG signed; DCO sign-off if the repo wants it.
+- **Opens PRs.** W4 ranks reviewers (blame × recency × CODEOWNERS × availability), composes a 4-section body from W2 cluster + Hornet V4 continuity, dispatches to the right host adapter.
+- **Reads CI.** ci-reader normalizes check runs from 10 systems. Never triggers a build itself (that's Assembler's lane).
+- **Merges.** Strategy inferred from workflow; merge-queue-enqueues where configured.
+- **Guards destructive ops.** weaver-gate intercepts `PreToolUse(Bash)` — force-push / filter-branch / clean -fdx / rebase-i-of-pushed etc. route through a Hornet-style decision-gate before they can run.
+- **Learns.** W5 Gauss EMA adapts priors per-developer. Past sample 10, the defaults give way to what you actually do.
+
+---
+
+## The Five Engines
+
+| ID | Name | What it does | Algorithm |
+|----|------|--------------|-----------|
+| W1 | Myers-Diff Conventional Classifier | Drafts + validates Conventional Commits messages | Myers diff → rule-based classifier → LLM re-rank (Sonnet) + rules check (Haiku + Python) |
+| W2 | Jaccard-Cosine Boundary Segmentation | Finds task boundaries in the edit stream | Online agglomerative clustering with multi-modal distance: α·(1−jaccard(files)) + β·(1−cosine(tokens)) + γ·tanh(idle/τ). α=β=0.4, γ=0.2, τ=300s, θ=0.55 |
+| W3 | Workflow-Pattern Classifier | Detects GitHub Flow / Trunk-Based / GitFlow / Release Flow / Stacked Diffs | Weighted decision tree over branch-age distribution, protection rules, config-file markers, tag cadence. Per-subtree overrides via `.weaver/workflow-map.yaml` |
+| W4 | Path-History Reviewer Routing | Ranks reviewers for a PR | Blame-graph scoring × recency (90-day half-life) × path-depth × CODEOWNERS boost × availability. Capped at 3 — no review storms |
+| W5 | Gauss Learning (Weaver) | Per-developer preference adaptation | Exponential moving averages (α=0.3) over commit style, slug style, reviewer overrides, W2 corrections. Bootstrap floor at 10 samples |
+
+Every engine has a formal-algorithm-level name. "Smart commit helper" is not a name. "Myers-Diff Conventional Classifier" is.
+
+---
+
+## All 15 Workflows
+
+Everything a team does with git/PR/CI — wired through real host + CI adapters.
+
+### Commits & branching
+
+- **`/weaver:commit`** — draft + validate + sign + commit staged changes
+- **`/weaver:branch`** — create a branch named per the detected workflow
+- **`/weaver:workflow-detect`** — show W3's classification + rationale
+- **`/weaver:revert`** — safe revert via new commit (never rewrites history)
+
+### Pull requests
+
+- **`/weaver:pr`** — open or update a draft PR with W2-cluster body + W4 reviewers
+- **`/weaver:status`** — aggregate view of branch + commits + PR + CI + reviewers + merge queue
+- **`/weaver:reviewers`** — rank reviewers without assigning (useful for web-UI workflows)
+- **`/weaver:merge`** — merge with strategy inferred from workflow, or enqueue on a merge queue
+- **`/weaver:close`** — close a PR without merging (for abandoned / superseded work)
+- **`/weaver:release`** — tag + changelog + handoff to semantic-release / release-please / changesets / goreleaser
+
+### CI & safety
+
+- **`/weaver:ci-status`** — aggregate CI status across every configured system
+- **`/weaver:retry-ci`** — rerun failing checks (existing runs only — new-build triggers are Assembler's lane)
+- **`/weaver:dry-run`** — preview any git command through the destructive-op classifier without executing
+
+### Learning
+
+- **`/weaver:learnings`** — show W5 priors: commit style, slug style, reviewer overrides, W2 corrections
+
+Every command has a markdown contract in `plugins/<name>/commands/*.md` — agents follow it; Claude Code dispatches the tools.
+
+---
+
+## 10 Git Hosts, All Real
+
+No stubs. Every host has a full `HostAdapter` implementation. When credentials aren't configured, `is_authenticated()` returns False and ops raise `NotImplementedHostOp` cleanly — never silently fabricating a fake PR.
+
+| Host | Transport | Auth | Status |
+|------|-----------|------|--------|
+| **GitHub** (Cloud + Enterprise) | urllib + gh fallback | `GH_TOKEN` / `GITHUB_TOKEN` / git-credential-manager | Live-tested end-to-end |
+| **GitLab** (SaaS + self-managed) | urllib | `GITLAB_TOKEN` / `GL_TOKEN` | Contract-tested |
+| **Bitbucket Cloud** | urllib (REST 2.0) | `BITBUCKET_TOKEN` | Contract-tested |
+| **Bitbucket Data Center** | urllib (REST 1.0, version-based PUTs) | `BITBUCKET_DC_TOKEN` | Contract-tested |
+| **Azure DevOps** | urllib (Basic-wrapped PAT, api-version=7.1) | `AZURE_DEVOPS_TOKEN` / `VSTS_TOKEN` | Contract-tested |
+| **Gitea** | urllib (GH-shape, `token` header) | `GITEA_TOKEN` | Contract-tested |
+| **Forgejo** | urllib (subclass of Gitea) | `FORGEJO_TOKEN` / `GITEA_TOKEN` | Contract-tested |
+| **Codeberg** | urllib (forgejo.codeberg.org) | `FORGEJO_TOKEN` / git-credential-manager | Contract-tested |
+| **AWS CodeCommit** | `aws codecommit` CLI | AWS CLI config / IAM | Contract-tested |
+| **SourceHut** | `git format-patch` + smtplib | SMTP / `git send-email` config | Contract-tested |
+
+Every adapter follows the same contract: token resolution → authenticated request → normalized `PullRequest` return. The only structural difference is SourceHut, whose "PR" is an email thread to a mailing list — Weaver generates and sends the patch series; review happens in-list.
+
+---
+
+## 10 CI Systems, All Real
+
+Same pattern: every CI adapter reads status via its native API (HTTP for most, `kubectl` for k8s-native). Returns a normalized `Check` list — empty when credentials/tooling are absent, never fabricated. Weaver reads; **Assembler runs.**
+
+| System | Transport | Gate-ready? |
+|--------|-----------|-------------|
+| GitHub Actions | urllib + gh (check-runs API) | Yes |
+| GitLab CI | urllib (`/projects/:id/pipelines/:n/jobs`) | Yes |
+| CircleCI | urllib (`Circle-Token` header) | Yes |
+| Jenkins | urllib Basic auth, **treats UNSTABLE as failure** | Yes (with caveat) |
+| Buildkite | urllib (SaaS control plane + agents) | Yes |
+| Drone / Woodpecker | urllib (`/builds` or `/pipelines`) | Yes |
+| Tekton | kubectl → PipelineRun CRDs | Yes (with kube access) |
+| ArgoCD | kubectl → Application sync/health | Read-only (GitOps — drift surface) |
+| FluxCD | kubectl → Kustomization Ready conditions | Read-only (GitOps) |
+
+Jenkins gets its own note: **UNSTABLE is NOT success.** We learned that from the semantic-release / Jenkins incident where `status:SUCCESS` returned for a pipeline with `result:UNSTABLE` on a deploy stage. Weaver's Jenkins adapter requires `status == SUCCESS && result == SUCCESS` — anything else is non-green.
+
+---
+
+## The Decision-Gate Contract
+
+Every destructive git operation routes through weaver-gate before it can run:
+
+| Operation | Classification | Recovery window | Bypass |
+|-----------|----------------|-----------------|--------|
+| `git push --force` | Destructive | 30d (remote reflog) | `--yes-i-know` |
+| `git push --force-with-lease` to protected branch | **Protected-destructive** | 30d | **Never** |
+| `git rebase -i <pushed-ref>` | Destructive | 90d (local reflog) | `--yes-i-know` |
+| `git filter-branch` / `filter-repo` | Destructive | 90d local / permanent remote | `--yes-i-know` + 5s countdown |
+| `git reset --hard <past-pushed>` | Destructive | 90d | `--yes-i-know` |
+| `git branch -D <unmerged>` | Destructive | 90d | `--yes-i-know` |
+| `git push --delete <branch>` | Destructive | host-dependent (GitHub: 14d) | `--yes-i-know` |
+| `git tag -d` | Destructive | 90d local / permanent remote | `--yes-i-know` |
+| **`git clean -fdx`** | **Protected-destructive** | **0 (irrecoverable)** | **Never** |
+| Merge-queue `--admin` bypass | Destructive | 0 (immediate) | `--admin-bypass` flag only |
+
+Every gated op is audited to `plugins/weaver-gate/state/audit.jsonl` — append-only, Allay-A4 atomic write.
+
+---
+
+## Install
+
+```bash
+# Prerequisites (one-time)
+winget install --id GitHub.cli      # or: brew install gh  — for the GitHub fast-path
+gh auth login                        # device flow; stores in OS keychain
+
+# Weaver
+/plugin marketplace add enchanted-plugins/weaver
+/plugin install full@weaver
+```
+
+That installs all 8 plugins + the `full` meta-plugin via dependency resolution.
+
+**Opt-in tooling per adapter** — Weaver works without any of these (each adapter reports `is_authenticated()=False` and raises cleanly), but having them unlocks the host:
+
+- GitHub: `GH_TOKEN` / `GITHUB_TOKEN` / git-credential-manager
+- GitLab: `GITLAB_TOKEN`
+- Bitbucket: `BITBUCKET_TOKEN` (Cloud) or `BITBUCKET_DC_TOKEN` (DC)
+- Azure DevOps: `AZURE_DEVOPS_TOKEN`
+- Gitea/Forgejo/Codeberg: `GITEA_TOKEN` / `FORGEJO_TOKEN`
+- CodeCommit: `aws configure` (AWS CLI v2)
+- SourceHut: SMTP config OR `git send-email` configured
+- Tekton/ArgoCD/FluxCD: `kubectl` with a current context
+
+---
+
+## What You Get Per Session
+
+Per-plugin state, all stored under `plugins/<name>/state/` (gitignored):
+
+- `boundary-segmenter/state/boundary-clusters.json` — rolling W2 cluster state, survives compaction
+- `boundary-segmenter/state/boundary-events.jsonl` — every fired boundary, append-only
+- `weaver-gate/state/audit.jsonl` — every gated/blocked destructive op
+- `capability-memory/state/capability-registry.json` — 10-host capability data
+- `weaver-learning/state/learnings.json` — W5 EMA priors
+- `weaver-learning/state/priors.json` — session-cached slice downstream engines read
+- `commit-intelligence/state/metrics.jsonl` — per-commit metrics
+- `pr-lifecycle/state/last-reviewer-suggestion.json` — W4's last ranking
+
+Everything event-sourced, JSONL where applicable, atomic where writes matter (Allay-A4 tempfile + rename + fsync).
+
+---
+
+## Architecture
+
+Auto-generated from `plugin.json` + `hooks.json` + skill/agent frontmatter — can't go stale.
 
 <p align="center">
   <img src="docs/assets/highlevel.svg"
-       alt="Weaver high-level: Claude Code tool calls route to capability-memory (SessionStart) and weaver-gate (PreToolUse) plus 7 more plugins coordinating through mcp-event-bus"
+       alt="Weaver high-level: 9 plugins coordinating through the enchanted-mcp event bus"
        width="100%" style="max-width: 900px;">
 </p>
 
 <details>
 <summary>View all four diagrams (regenerated from plugin.json &amp; hooks.json)</summary>
 
-- [High level](docs/assets/highlevel.svg) — plugins and the hook phases they own
-- [Hook detail](docs/assets/hooks.svg) — which tool matchers fire which scripts with what timeouts
-- [Data flow](docs/assets/dataflow.svg) — per-plugin metrics streams into mcp-event-bus
+- [High level](docs/assets/highlevel.svg) — plugins + hook phases
+- [Hook detail](docs/assets/hooks.svg) — every script + tool matcher + timeout
+- [Data flow](docs/assets/dataflow.svg) — per-plugin metrics → mcp-event-bus
 - [Session lifecycle](docs/assets/lifecycle.svg) — SessionStart → PreToolUse → PostToolUse → PreCompact
 
-Regenerate after editing any `plugin.json` or `hooks.json`:
+Regenerate:
 
 ```bash
 python docs/architecture/generate.py
@@ -60,105 +269,41 @@ npx -y -p @mermaid-js/mermaid-cli mmdc -i docs/architecture/highlevel.mmd \
 
 </details>
 
-Weaver doesn't replace git. It *listens* to your session and drives git on your behalf.
+---
 
-Every `PostToolUse(Edit|Write)` event flows into **W2 — Jaccard-Cosine Boundary Segmentation**, an online clustering algorithm that decides when a coherent logical unit of work has completed. The distance function combines file-set Jaccard, Hornet-V1 semantic-diff cosine, and idle-time gap — multi-signal from day one, avoiding the idle-timer-only split failure mode Graphite hit in 2023.
+## Verification
 
-When a boundary closes:
-- **W3 — Workflow-Pattern Classifier** infers your branching model (GitHub Flow / Trunk-Based / GitFlow / Release Flow / Stacked Diffs) from repo signals and picks a branch name.
-- **W1 — Myers-Diff Conventional Classifier** drafts a Conventional Commits message (Sonnet), then validates format + policy (Haiku).
-- **W4 — Path-History Reviewer Routing** ranks reviewers from `git log` blame + CODEOWNERS + Hornet availability events, caps at 3.
-- **weaver-gate** inspects every `git` invocation via `PreToolUse(Bash)` and routes destructive ops through a Hornet-style decision-gate.
-- **capability-memory** encodes how each of the 9 git hosts actually behaves — rate limits, webhook signing, merge-queue support, CODEOWNERS flavor, known quirks.
-- **ci-reader** reads status from 8 CI systems to gate merge-queue entry. **Weaver never triggers a build — that's Assembler's domain.** Ownership boundary enforced via the enchanted-mcp event bus.
-- **W5 — Gauss Learning (Weaver)** persists your commit-style preferences across sessions (Allay-A4 atomic serialization).
+- **28 test assertions** passing (`bash tests/run-all.sh`) — unit, contract, and integration tiers. JSON validation, bash syntax check, Python functional smoke, end-to-end hook simulation.
+- **1 live integration test** (`WEAVER_INTEGRATION=1 bash tests/run-all.sh`) — creates a real branch on `enchanted-plugins/weaver`, opens a real draft PR via the urllib adapter path (no `gh` required), round-trips it via `get_pr`, closes it, deletes the branch. Proven against real GitHub.
+- **Contract test for every host** (`tests/pr-lifecycle/test-all-hosts-contract.sh`) — asserts every one of the 10 adapters instantiates cleanly, reports a bool `is_authenticated`, and refuses to fabricate a PR when credentials are absent.
+- **Honest numbers.** What's verified live: GitHub only. What's verified by contract: all 10 hosts + 10 CI systems. The README doesn't pretend otherwise. When you drop a GitLab/Bitbucket/Azure token in, you're using the same `_rest.api_request` call path that shipped through GitHub's real API. If something breaks there, it's in the per-host JSON shape, not the flow.
 
-## What Makes Weaver Different
+---
 
-### It covers every git host you actually use
+## vs Everything Else
 
-**Tier-1 (first-class):** GitHub (Cloud + Enterprise Server), GitLab (SaaS + self-managed), Bitbucket Cloud, Bitbucket Data Center.
+| | Husky | pre-commit | commitizen | Graphite | `gh` alone | **Weaver** |
+|---|---|---|---|---|---|---|
+| Works without `node_modules` | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| Conventional Commits drafting | ✗ | ✗ | manual | ✗ | ✗ | **Sonnet draft + Haiku validate** |
+| Task boundary detection | ✗ | ✗ | ✗ | timer only | ✗ | **W2 multi-signal (Jaccard + cosine + idle)** |
+| Branch workflow detection | ✗ | ✗ | ✗ | GitHub Flow assumed | ✗ | **W3 per-subtree classifier** |
+| Reviewer routing | ✗ | ✗ | ✗ | CODEOWNERS only | manual | **W4 blame × CODEOWNERS × availability, capped at 3** |
+| Per-developer learning | ✗ | ✗ | ✗ | ✗ | ✗ | **W5 Gauss EMA** |
+| Force-push gate | ✗ | ✗ | ✗ | ✗ | ✗ | **Hornet-pattern decision-gate** |
+| Multi-host | github-only | any | any | github+gitlab | github-only | **10 hosts** |
+| Multi-CI | n/a | n/a | n/a | n/a | github-only | **10 systems** |
+| Zero runtime deps | ✗ npm | ✓ python | ✗ npm | ✗ node | ✓ | ✓ |
 
-**Tier-2 (best-effort / read-only, explicit):** Azure DevOps, Gitea, Forgejo, Codeberg, AWS CodeCommit, SourceHut.
+Weaver isn't replacing git. It's **the layer above it** that you were building piece-by-piece in every project anyway.
 
-The Provider Capability Registry encodes each host's quirks as data — not branching code. GitHub's 5k-vs-15k rate-limit difference between PAT and App tokens, GitLab self-managed's v14+ capability drift, Bitbucket Cloud's unsigned webhooks, SourceHut's mailing-list PR workflow. The registry is the source of truth.
-
-### It reads every CI system, it triggers none
-
-Weaver **reads** GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone/Woodpecker, Tekton, ArgoCD/FluxCD. Status reads gate PR merges. Triggers, builds, and deploys belong to Assembler (Phase 3 roadmap) — the boundary is enforced by the event bus.
-
-### It's silent when it works, loud when it matters
-
-Auto-orchestration is invisible when things go well. The decision-gate fires only for destructive ops — force-push, history rewrite, branch deletion, `clean -fdx`, merge-queue bypass. The audit log at `plugins/*/state/audit.jsonl` captures every gated operation.
-
-### It learns from your corrections
-
-W5 tracks which commit messages you accept, which you rewrite, which branch names you override. Over 6+ weeks of use, W1 and W3 adapt to your style. Accumulated learnings feed into the `shared/learnings.json` Gauss Accumulation network that connects to the rest of the enchanted-plugins ecosystem.
-
-## The Auto-Orchestration Flow
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#auto-orchestration-flow) for the full 23-step sequence with latency budgets. The summary:
-
-| Stage | Latency | What happens |
-|---|---|---|
-| Edit → Boundary | ~25ms | W2 clusters the event, decides same-cluster or boundary |
-| Boundary → Commit | ~3.5s | Branch checkout, W1 Stage 1 (Sonnet), W1 Stage 2 (Haiku), sign, commit |
-| Commit → Draft PR | ~6.5s | Push, Opus PR-description from Hornet V4, W4 reviewer routing, host-API POST |
-| PR → Ready | event-driven | `assembler.pipeline.status.changed` promotes to ready on first green + approval |
-
-## Install
-
-```bash
-/plugin marketplace add enchanted-plugins/weaver
-/plugin install full@weaver
-```
-
-That installs all 8 plugins via the dependency resolution in `full`. Cherry-pick with e.g. `/plugin install commit-intelligence@weaver` if you want only W1.
-
-Pre-flight: Weaver expects `git` on PATH and either `git-credential-manager` or `gh auth` configured. The installer warns if neither is present.
-
-## 8 Plugins, 5 Engines, 9 Hosts, 8 CI Systems
-
-| Plugin | Engine | Role |
-|--------|--------|------|
-| `commit-intelligence` | W1 — Myers-Diff Conventional Classifier | Drafts + validates Conventional Commits messages |
-| `boundary-segmenter` | W2 — Jaccard-Cosine Boundary Segmentation | **Defining engine.** Clusters `PostToolUse(Edit\|Write)` into task boundaries |
-| `branch-workflow` | W3 — Workflow-Pattern Classifier | Detects branching model, drives branch creation |
-| `pr-lifecycle` | W4 — Path-History Reviewer Routing | PR state machine + reviewer ranking |
-| `weaver-gate` | (rules) | Destructive-op decision-gate, Hornet pattern |
-| `capability-memory` | (schema) | Provider capability registry — the host "memory" |
-| `ci-reader` | (adapters) | Read-only status + log-stream across 8 CI systems |
-| `weaver-learning` | W5 — Gauss Learning (Weaver) | Developer preference persistence, Allay-A4 atomic |
-| `full` | (meta) | Declares the other 8 as dependencies |
-
-## Destructive-Op Contract
-
-Full table in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#destructive-op-confirmation-contract). Headline rules:
-
-- **Protected-branch force-push** → never bypassed.
-- **`git clean -fdx`** → never bypassed (irrecoverable).
-- **Merge-queue `--admin` bypass** → never bypassed without explicit `--admin-bypass` flag.
-- **All other destructive ops** → `--yes-i-know` bypass for one invocation, always audited.
-
-## Ecosystem Interactions
-
-Weaver is the 21st plugin in the @enchanted-plugins roadmap. Every cross-plugin interaction flows through the mcp-event-bus:
-
-- **Hornet → Weaver**: V1 semantic-diff vectors, V4 session-continuity, reviewer availability.
-- **Reaper → Weaver**: pre-push secret detection, dangerous-action blocks.
-- **Weaver → Assembler**: CI trigger requests, PR state transitions.
-- **Nook → Weaver**: budget-threshold signals driving Opus→Sonnet→Haiku degradation.
-- **Weaver → Shared Learnings**: Gauss Accumulation network via W5.
-
-Never direct imports across plugins. Events only.
-
-## Architecture
-
-Full architecture document at [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Produced by [flux/prompts/weaver-architecture/](https://github.com/enchanted-plugins/flux/tree/main/prompts/weaver-architecture) — σ=0.40, DEPLOY, all 12 success criteria verified.
+---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). TL;DR: zero pip installs, honest scoring, per-sub-plugin structure identical, tests pass, Assembler boundary respected.
+See [CONTRIBUTING.md](CONTRIBUTING.md). TL;DR: zero pip installs, honest scoring, per-sub-plugin structure identical, tests pass, Assembler boundary respected (Weaver reads CI; Weaver does not trigger builds).
+
+---
 
 ## License
 
