@@ -239,18 +239,29 @@ If you skip setup entirely, Weaver runs in degraded mode — commit drafting + W
 
 ## What You Get Per Session
 
-Per-plugin state, all stored under `plugins/<name>/state/` (gitignored):
+```
+plugins/boundary-segmenter/state/
+├── boundary-clusters.json           W2 rolling cluster state, survives compaction
+└── boundary-events.jsonl            Every fired task boundary, append-only
 
-- `boundary-segmenter/state/boundary-clusters.json` — rolling W2 cluster state, survives compaction
-- `boundary-segmenter/state/boundary-events.jsonl` — every fired boundary, append-only
-- `weaver-gate/state/audit.jsonl` — every gated/blocked destructive op
-- `capability-memory/state/capability-registry.json` — 10-host capability data
-- `weaver-learning/state/learnings.json` — W5 EMA priors
-- `weaver-learning/state/priors.json` — session-cached slice downstream engines read
-- `commit-intelligence/state/metrics.jsonl` — per-commit metrics
-- `pr-lifecycle/state/last-reviewer-suggestion.json` — W4's last ranking
+plugins/weaver-gate/state/
+└── audit.jsonl                      Every gated/blocked destructive op
 
-Everything event-sourced, JSONL where applicable, atomic where writes matter (Allay-A4 tempfile + rename + fsync).
+plugins/capability-memory/state/
+└── capability-registry.json         10-host capability data, nightly-refreshed
+
+plugins/weaver-learning/state/
+├── learnings.json                   W5 EMA priors, cross-session
+└── priors.json                      Session-cached slice downstream engines read
+
+plugins/commit-intelligence/state/
+└── metrics.jsonl                    Per-commit W1 classification metrics
+
+plugins/pr-lifecycle/state/
+└── last-reviewer-suggestion.json    W4's last blame-graph reviewer ranking
+```
+
+Everything event-sourced, JSONL where applicable, atomic where writes matter (Allay-A4 tempfile + rename + fsync). All state dirs gitignored; `.gitkeep` sentinels only.
 
 ---
 
@@ -316,14 +327,6 @@ Weaver isn't replacing git. It's **the layer above it** that you were building p
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). TL;DR: zero pip installs, honest scoring, per-sub-plugin structure identical, tests pass, Assembler boundary respected (Weaver reads CI; Weaver does not trigger builds).
-
----
-
-## Origin
-
-Weaver takes its name from **Hollow Knight** — the Weavers are Hornet's ancestral kin, silk-spinners who weave individual threads into coherent patterns. Branches are threads; merges stitch them into a coherent history. This plugin inherits Hornet's careful-observer stance (see the H-suffix cross-references in [docs/glossary.md](docs/glossary.md)) and adds the weave: workflow classification, path-history reviewer routing, per-developer learning that gets quieter as it learns.
-
-Weaver sits alongside Hornet in the ecosystem — Hornet watches *changes*, Weaver weaves *workflow*. Together they answer both halves of *"what just happened?"* See [docs/ecosystem.md](docs/ecosystem.md) for the full map.
 
 ---
 
