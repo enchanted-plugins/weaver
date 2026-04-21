@@ -228,7 +228,9 @@ Expected: `/weaver:setup` classifies your host + CI + auth in one pass, promptin
 
 **Agent tier spread:** 3 Opus (boundary-detector, conflict-resolver, pr-description-crafter), 1 Sonnet (commit-drafter), 1 Haiku (message-validator) — orchestration on Opus, execution on Sonnet, validation on Haiku. See [CLAUDE.md](CLAUDE.md) for the tiering contract.
 
-**Operational skills (above the 15 workflow commands):** `/weaver:stats` (per-plugin metrics), `/weaver:audit` (weaver-gate decision log), `/weaver:audit-pdf` (dark-themed PDF export), `/weaver:discard` (reset a stuck W2 cluster), `/weaver:gate-check` (pre-flight PR gate probe), `/weaver:review-boundary` (Opus boundary-detector escalation when W2 confidence < 0.7). Surfaces the hooks' internal state without widening the auto-orchestration surface.
+**Operational skills (above the 15 workflow commands):** `/weaver:stats` (per-plugin metrics), `/weaver:audit` (weaver-gate decision log), `/weaver:audit-pdf` (HTML + dark-themed PDF export; PDF best-effort via wkhtmltopdf / chromium / chrome / msedge), `/weaver:discard` (reset a stuck W2 cluster), `/weaver:gate-check` (pre-flight PR gate probe), `/weaver:review-boundary` (Opus boundary-detector escalation when W2 confidence < 0.7). Surfaces the hooks' internal state without widening the auto-orchestration surface.
+
+Footnote: `audit-pdf` produces HTML as the primary artifact (always succeeds); PDF conversion is best-effort via available headless browsers — see [commands/audit-pdf.md](plugins/weaver-learning/commands/audit-pdf.md).
 
 ## What You Get Per Session
 
@@ -287,7 +289,7 @@ Tracked in [docs/ROADMAP.md](docs/ROADMAP.md) and the shared [ecosystem map](htt
 | W1 | Myers-Diff Conventional Classifier | Drafts + validates Conventional Commits messages | Myers diff → rule-based classifier → LLM re-rank (Sonnet) + rules check (Haiku + Python) |
 | W2 | Jaccard-Cosine Boundary Segmentation | Finds task boundaries in the edit stream | Online agglomerative clustering with multi-modal distance: α·(1−jaccard(files)) + β·(1−cosine(tokens)) + γ·tanh(idle/τ). α=β=0.4, γ=0.2, τ=300s, θ=0.55 |
 | W3 | Workflow-Pattern Classifier | Detects GitHub Flow / Trunk-Based / GitFlow / Release Flow / Stacked Diffs | Weighted decision tree over branch-age distribution, protection rules, config-file markers, tag cadence. Per-subtree overrides via `.weaver/workflow-map.yaml` |
-| W4 | Path-History Reviewer Routing | Ranks reviewers for a PR | Blame-graph scoring × recency (90-day half-life) × path-depth × CODEOWNERS boost × availability. Capped at 3 — no review storms |
+| W4 | Blame-Weighted Reviewer Ranker | Ranks reviewers for a PR | Weighted sum: `blame_score × recency_decay × path_depth × codeowners_boost × availability`. Blame score per path from `git log` (90-day half-life), depth weighting (deeper = higher priority), CODEOWNERS union boost (1.5×), availability filter. Top-3 cap — no review storms |
 | W5 | Gauss Learning (Weaver) | Per-developer preference adaptation | Exponential moving averages (α=0.3) over commit style, slug style, reviewer overrides, W2 corrections. Bootstrap floor at 10 samples |
 
 Every engine has a formal-algorithm-level name. "Smart commit helper" is not a name. "Myers-Diff Conventional Classifier" is.
@@ -398,7 +400,7 @@ Every gated op is audited to `plugins/weaver-gate/state/audit.jsonl` — append-
 | Conventional Commits drafting | ✗ | ✗ | manual | ✗ | ✗ | **Sonnet draft + Haiku validate** |
 | Task boundary detection | ✗ | ✗ | ✗ | timer only | ✗ | **W2 multi-signal (Jaccard + cosine + idle)** |
 | Branch workflow detection | ✗ | ✗ | ✗ | GitHub Flow assumed | ✗ | **W3 per-subtree classifier** |
-| Reviewer routing | ✗ | ✗ | ✗ | CODEOWNERS only | manual | **W4 blame × CODEOWNERS × availability, capped at 3** |
+| Reviewer routing | ✗ | ✗ | ✗ | CODEOWNERS only | manual | **W4 weighted sum (blame × recency × depth × CODEOWNERS × availability), capped at 3** |
 | Per-developer learning | ✗ | ✗ | ✗ | ✗ | ✗ | **W5 Gauss EMA** |
 | Force-push gate | ✗ | ✗ | ✗ | ✗ | ✗ | **Hornet-pattern decision-gate** |
 | Multi-host | github-only | any | any | github+gitlab | github-only | **10 hosts** |

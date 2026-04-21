@@ -2,9 +2,9 @@
 
 **Idempotent PR state machine + reviewer routing.**
 
-Engine: **W4 — Path-History Reviewer Routing.**
+Engine: **W4 — Blame-Weighted Reviewer Ranker.**
 
-State machine: `drafting → ready → reviewing → approved → queued → merged | closed`. Each transition is an idempotent adapter call — safe to re-run after network flake. PR descriptions assembled from Hornet V4 session-continuity nodes (what changed / why / how verified / rollback plan). W4 reviewer ranking: `git log` blame-graph weighted by recency (90-day half-life) and path-depth, unioned with CODEOWNERS, filtered by Hornet availability events, capped at 3 (avoids Kubernetes-style reviewer storms).
+State machine: `drafting → ready → reviewing → approved → queued → merged | closed`. Each transition is an idempotent adapter call — safe to re-run after network flake. PR descriptions assembled from Hornet V4 session-continuity nodes (what changed / why / how verified / rollback plan). W4 reviewer ranking: weighted sum of `blame_score × recency_decay × path_depth × codeowners_boost × availability`. Blame score from `git log` per-path with 90-day half-life, depth weighting (deeper files prioritized), CODEOWNERS membership boost (1.5×), Hornet availability filter. Top-3 cap (avoids Kubernetes-style reviewer storms).
 
 Merge queues: GitHub Merge Queue, GitLab Merge Trains, Bitbucket Cloud poll-and-merge fallback.
 

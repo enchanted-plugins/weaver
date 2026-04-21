@@ -23,7 +23,7 @@ Weaver is hook-driven, not skill-invoked. Auto-orchestration is the product's re
 | W1 | Myers-Diff Conventional Classifier | commit-intelligence | Diff summarization + rule-based classifier + LLM re-rank |
 | W2 | Jaccard-Cosine Boundary Segmentation | boundary-segmenter | Online agglomerative clustering, multi-modal distance. **Defining engine** |
 | W3 | Workflow-Pattern Classifier | branch-workflow | Weighted decision tree over repo feature vector |
-| W4 | Path-History Reviewer Routing | pr-lifecycle | Blame-graph weighted scoring + recency decay + availability filter |
+| W4 | Blame-Weighted Reviewer Ranker | pr-lifecycle | Blame score × recency decay × path depth × CODEOWNERS boost × availability filter; top-3 cap |
 | W5 | Gauss Learning (Weaver) | weaver-learning | Weighted moving averages over preference signals, Allay-A4 persistence |
 
 ## Tier-1 vs Tier-2 hosts
@@ -45,8 +45,18 @@ Registry source of truth: **10 hosts** (github, gitlab, bitbucket-cloud, bitbuck
 
 Weaver **reads** CI status across 10 systems (GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone, Woodpecker, Tekton, ArgoCD, FluxCD — ArgoCD/FluxCD are read-only, not merge-queue gating; see [plugins/ci-reader/state/ci-registry.json](plugins/ci-reader/state/ci-registry.json)). Weaver is a git-workflow plugin; CI execution belongs to your existing CI pipelines (push-triggered workflows, etc.). Cross-plugin signals flow via the enchanted-mcp event bus:
 
+### Phase 1 (shipped)
+
 - **Weaver publishes**: `weaver.task.boundary.detected`, `weaver.commit.committed`, `weaver.pr.drafted`, `weaver.pr.ready`, `weaver.destructive.detected`, `weaver.ci.status.observed`
-- **Weaver subscribes**: `hornet.change.classified`, `hornet.session.continuity.node`, `hornet.reviewer.availability.changed`, `reaper.prepush.secret.detected`, `nook.budget.threshold.crossed`
+- **Weaver subscribes to**: `hornet.session.continuity.node` (PR description context), `hornet.reviewer.availability.changed` (W4 availability filter)
+
+### Phase 2 aspirational (enchanted-mcp event bus not yet shipped)
+
+The following subscriptions are reserved for cross-plugin event consumption when the enchanted-mcp event bus becomes available — Phase 1 Weaver runs standalone with no consumption of these events:
+
+- `hornet.change.classified` — Hornet's code-change classification (reserved for PR risk scoring)
+- `reaper.prepush.secret.detected` — Reaper secret-scanning findings (reserved for augmenting weaver-gate decisions)
+- `nook.budget.threshold.crossed` — Nook token-budget alerts (reserved for session-pacing recommendations)
 
 ## Destructive-op contract
 
@@ -81,7 +91,7 @@ Audit log: `plugins/*/state/audit.jsonl` — append-only, Allay-A4 atomic patter
 
 - **Owning CI execution.** Weaver is a reader, not a runner — do not add build-trigger code paths. CI execution belongs to your existing CI pipelines.
 - **Auto-amending pushed commits.** W1's safe-amend detection must block this. Even if the Conventional Commits message is wrong, the fix is a follow-up commit, not `--amend`.
-- **Silent history rewrite on late-boundary correction.** W2's late-boundary correction surfaces as a skill invocation, never a silent `git rebase -i` or `git reset`.
+- **Silent history rewrite on late-boundary correction.** When W2 confidence is low (< 0.7), the boundary escalates to `/weaver:review-boundary` — an Opus agent judgment invoked via skill, never a silent `git rebase -i` or `git reset`. Low-confidence boundaries are surface for human review + learning, not silently rewritten.
 - **Reviewer storms.** W4 caps auto-requested reviewers at 3. Larger pools rotate across subsequent PRs, not stacked on one.
 - **GitHub-shaped assumptions in the abstraction layer.** The Provider Capability Schema must be filled for SourceHut (the hardest edge) before any host code ships — that's the test that proves the abstraction isn't GitHub-shaped underneath.
 
