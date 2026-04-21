@@ -26,6 +26,7 @@ WEAVER_BOUNDARY_GAMMA="0.2"             # Idle-gap tanh weight
 WEAVER_BOUNDARY_TAU_SECONDS=300         # Idle-gap scale factor
 WEAVER_BOUNDARY_THRESHOLD="0.55"        # Cluster-close threshold
 WEAVER_BOUNDARY_UNCERTAINTY="0.10"      # +/- band that routes to Opus judgment
+WEAVER_BOUNDARY_CONFIDENCE_THRESHOLD="${WEAVER_BOUNDARY_CONFIDENCE_THRESHOLD:-0.7}"  # Boundary confidence floor; below this, escalate to Opus boundary-detector
 
 # ── Commit-classifier (W1) thresholds ──────────────────────────────────────
 WEAVER_COMMIT_SUBJECT_MAX=72

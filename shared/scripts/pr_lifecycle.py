@@ -329,6 +329,82 @@ def open_or_update(
         return {"error": f"adapter error: {e}", "stage": "open-pr"}
 
 
+def promote_to_ready(
+    cwd: Path,
+    *,
+    pr_record: dict[str, Any] | None = None,
+    host_id: str | None = None,
+    head_sha: str | None = None,
+    repo: str | None = None,
+    strict: bool = False,
+    force: bool = False,
+) -> dict[str, Any]:
+    """Promote a draft PR to ready-for-review, gated on CI status.
+
+    Routes through `merge_queue_gate.check_gate(...)` before flipping the
+    draft bit. Decisions:
+
+      - `allow`  → adapter.mark_ready (when implemented); returns `promoted:True`.
+      - `block`  → returns `promoted:False` with the gate reasons. Caller
+                    (the /weaver:pr --ready command) surfaces this to the
+                    developer; nothing is mutated on the host.
+      - `unknown` → same as block unless `force=True` (developer override,
+                    audited upstream by weaver-gate when invoked from a
+                    destructive-op context).
+
+    Advisory-only: this function never mutates refs or rewrites history.
+    The only host mutation is the draft→ready flip, which is reversible.
+    """
+    sys.path.insert(0, str(Path(__file__).parent))
+    from merge_queue_gate import check_gate  # local module
+
+    pr_record = dict(pr_record or {})
+
+    # Resolve host/ref from pr_record if explicit args aren't given.
+    if head_sha is None:
+        head_sha = pr_record.get("head_sha")
+    if head_sha is None:
+        # Last-resort: current HEAD.
+        rc, out = _git("rev-parse", "HEAD", cwd=cwd)
+        head_sha = out.strip() if rc == 0 else ""
+    pr_record["head_sha"] = head_sha
+
+    if host_id is None:
+        # Try to infer via the host-adapter package.
+        sys.path.insert(0, str(Path(__file__).parent))
+        try:
+            from adapters import detect_host
+            host_id = detect_host(remote_url(cwd))
+        except Exception:  # noqa: BLE001
+            host_id = "unknown"
+
+    gate = check_gate(
+        pr_record=pr_record,
+        host_id=host_id or "unknown",
+        repo=repo,
+        strict=strict,
+    )
+
+    if gate["decision"] == "allow" or (force and gate["decision"] != "block"):
+        # Permission granted. Real adapter call is a no-op stub here —
+        # the /weaver:pr --ready command owns the `gh pr ready` shell-out
+        # so this layer stays pure Python.
+        return {
+            "promoted": True,
+            "gate": gate,
+            "host": host_id,
+            "head_sha": head_sha,
+        }
+
+    # Block (or strict-unknown). Never mutate the PR host-side.
+    return {
+        "promoted": False,
+        "gate": gate,
+        "host": host_id,
+        "head_sha": head_sha,
+    }
+
+
 def _try_load_cluster_state(cwd: Path) -> dict[str, Any] | None:
     """Load the W2 cluster state if boundary-segmenter is installed locally."""
     # Look for the cluster state in plugins/boundary-segmenter/state/.
@@ -375,6 +451,7 @@ def __main_cli():
     """Usage:
       python pr_lifecycle.py open [--dry-run] [--base B] [--head H]
       python pr_lifecycle.py compose-desc <cluster-file>  # useful for tests
+      python pr_lifecycle.py promote [--host H] [--ref SHA] [--repo OWNER/NAME] [--strict] [--force]
     """
     if len(sys.argv) < 2:
         print(json.dumps({"error": "usage: pr_lifecycle.py (open|compose-desc) ..."}))
@@ -399,6 +476,35 @@ def __main_cli():
         result = open_or_update(cwd, base=base, head=head, dry_run=dry_run)
         print(json.dumps(result, indent=2))
         sys.exit(0 if not result.get("error") else 1)
+
+    if action == "promote":
+        args = sys.argv[2:]
+        host_id = None
+        ref = None
+        repo = None
+        strict = "--strict" in args
+        force = "--force" in args
+        i = 0
+        while i < len(args):
+            if args[i] == "--host" and i + 1 < len(args):
+                host_id = args[i + 1]; i += 2
+            elif args[i] == "--ref" and i + 1 < len(args):
+                ref = args[i + 1]; i += 2
+            elif args[i] == "--repo" and i + 1 < len(args):
+                repo = args[i + 1]; i += 2
+            else:
+                i += 1
+        result = promote_to_ready(
+            cwd,
+            host_id=host_id,
+            head_sha=ref,
+            repo=repo,
+            strict=strict,
+            force=force,
+        )
+        print(json.dumps(result, indent=2))
+        # Exit 0 when promoted (gate allowed), 1 when blocked.
+        sys.exit(0 if result.get("promoted") else 1)
 
     if action == "compose-desc":
         if len(sys.argv) < 3:
