@@ -1,0 +1,356 @@
+{
+  "schema_version": "1.0",
+  "last_updated": "2026-04-20",
+  "source_of_truth": "shared/scripts/ci_adapters/ (adapter truth), docs/architecture/ (contract)",
+  "systems": {
+    "github_actions": {
+      "id": "github_actions",
+      "display_name": "GitHub Actions",
+      "status_api_path": "/repos/{owner}/{repo}/commits/{ref}/check-runs",
+      "log_stream_api": "gh run view {run_id} --log",
+      "rerun_api": "POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun",
+      "auth_modes": ["pat", "oauth", "github_app", "installation_token", "gh_cli"],
+      "rate_limits": {
+        "authenticated_per_hour": 5000,
+        "app_per_hour": 15000,
+        "notes": "per-installation for Apps; secondary rate limits apply to Actions API bursts"
+      },
+      "webhook_event_taxonomy": [
+        "check_run",
+        "check_suite",
+        "workflow_run",
+        "workflow_job",
+        "status",
+        "deployment_status"
+      ],
+      "status_enum": ["queued", "in_progress", "waiting", "requested", "pending"],
+      "conclusion_enum": [
+        "success",
+        "failure",
+        "neutral",
+        "cancelled",
+        "skipped",
+        "timed_out",
+        "action_required",
+        "stale"
+      ],
+      "supports_check_runs": true,
+      "supports_required_status": true,
+      "gate_merge_queue": true,
+      "known_quirks": [
+        "Legacy Status API and current Check Runs API coexist — Weaver prefers Check Runs for gating",
+        "gh CLI is the fast-path; absence degrades to raw REST via PAT",
+        "workflow_run events fire separately from check_run — de-dupe on run_id"
+      ],
+      "support_level": "first-class"
+    },
+    "gitlab_ci": {
+      "id": "gitlab_ci",
+      "display_name": "GitLab CI",
+      "status_api_path": "/projects/{id}/pipelines?ref={ref}",
+      "log_stream_api": "/projects/{id}/jobs/{job_id}/trace",
+      "rerun_api": "POST /projects/{id}/jobs/{job_id}/retry",
+      "auth_modes": ["pat", "oauth", "project_token", "group_token", "job_token"],
+      "rate_limits": {
+        "authenticated_per_hour": 2000,
+        "app_per_hour": null,
+        "notes": "SaaS.com defaults; self-managed varies — probe /api/v4/version"
+      },
+      "webhook_event_taxonomy": [
+        "Pipeline Hook",
+        "Job Hook",
+        "Deployment Hook",
+        "Merge Request Hook"
+      ],
+      "status_enum": [
+        "created",
+        "pending",
+        "running",
+        "waiting_for_resource",
+        "manual",
+        "scheduled"
+      ],
+      "conclusion_enum": ["success", "failed", "canceled", "skipped"],
+      "supports_check_runs": false,
+      "supports_required_status": true,
+      "gate_merge_queue": true,
+      "known_quirks": [
+        "Merge queue = Merge Trains; requires pipelines for merge-request events",
+        "Job status 'manual' is not terminal — waits for developer action",
+        "Pipeline object is parent of jobs; must fetch jobs separately for per-check granularity"
+      ],
+      "support_level": "best-effort"
+    },
+    "circleci": {
+      "id": "circleci",
+      "display_name": "CircleCI",
+      "status_api_path": "/project/{vcs}/{org}/{repo}/pipeline?branch={ref}",
+      "log_stream_api": null,
+      "rerun_api": "POST /workflow/{id}/rerun",
+      "auth_modes": ["pat"],
+      "rate_limits": {
+        "authenticated_per_hour": null,
+        "app_per_hour": null,
+        "notes": "Plan-tiered; no documented fixed per-hour ceiling — backoff on 429"
+      },
+      "webhook_event_taxonomy": ["workflow-completed", "job-completed"],
+      "status_enum": ["created", "queued", "running", "on_hold"],
+      "conclusion_enum": [
+        "success",
+        "failed",
+        "failing",
+        "canceled",
+        "not_run",
+        "error",
+        "unauthorized"
+      ],
+      "supports_check_runs": false,
+      "supports_required_status": true,
+      "gate_merge_queue": false,
+      "known_quirks": [
+        "Uses Circle-Token header, not Bearer auth",
+        "Project slug format is {vcs}/{org}/{repo} — Weaver defaults to gh/ prefix",
+        "Workflow is the gating unit, not pipeline; a pipeline may contain multiple workflows",
+        "'on_hold' is mid-run (approval gate), not terminal"
+      ],
+      "support_level": "best-effort"
+    },
+    "jenkins": {
+      "id": "jenkins",
+      "display_name": "Jenkins",
+      "status_api_path": "/job/{name}/lastBuild/api/json",
+      "log_stream_api": "/job/{name}/{build}/consoleText",
+      "rerun_api": "POST /job/{name}/build (requires CSRF crumb)",
+      "auth_modes": ["basic_auth_token", "api_token"],
+      "rate_limits": {
+        "authenticated_per_hour": null,
+        "app_per_hour": null,
+        "notes": "Self-managed; configurable per instance — respects Retry-After"
+      },
+      "webhook_event_taxonomy": [
+        "jenkins.job.started",
+        "jenkins.job.completed",
+        "jenkins.job.finalized"
+      ],
+      "status_enum": ["building", "queued"],
+      "conclusion_enum": [
+        "SUCCESS",
+        "FAILURE",
+        "UNSTABLE",
+        "ABORTED",
+        "NOT_BUILT"
+      ],
+      "supports_check_runs": false,
+      "supports_required_status": false,
+      "gate_merge_queue": false,
+      "known_quirks": [
+        "UNSTABLE is NOT success — Weaver maps it to failure per the 2021 semantic-release incident",
+        "Rebuild endpoint requires CSRF crumb fetched separately — out of scope for stub adapter",
+        "lastBuild implicit; `ref` parameter is ignored since Jenkins resolves via job state not git ref",
+        "Basic auth with username:api_token base64-encoded, not Bearer"
+      ],
+      "support_level": "best-effort"
+    },
+    "buildkite": {
+      "id": "buildkite",
+      "display_name": "Buildkite",
+      "status_api_path": "/organizations/{org}/pipelines/{pipeline}/builds?branch={ref}",
+      "log_stream_api": "/organizations/{org}/pipelines/{pipeline}/builds/{num}/jobs/{job}/log",
+      "rerun_api": "PUT /organizations/{org}/pipelines/{pipeline}/builds/{num}/jobs/{job}/retry",
+      "auth_modes": ["pat"],
+      "rate_limits": {
+        "authenticated_per_hour": null,
+        "app_per_hour": null,
+        "notes": "Plan-tiered; 429 responses include Retry-After"
+      },
+      "webhook_event_taxonomy": [
+        "build.scheduled",
+        "build.running",
+        "build.finished",
+        "build.failing",
+        "job.scheduled",
+        "job.started",
+        "job.finished"
+      ],
+      "status_enum": ["scheduled", "creating", "running", "canceling"],
+      "conclusion_enum": [
+        "passed",
+        "failed",
+        "blocked",
+        "canceled",
+        "skipped",
+        "not_run"
+      ],
+      "supports_check_runs": false,
+      "supports_required_status": true,
+      "gate_merge_queue": false,
+      "known_quirks": [
+        "'blocked' state means paused on a manual step — not a terminal failure, but Weaver treats it as failure for gating",
+        "Repo path is {org}/{pipeline-slug}, not git owner/repo",
+        "Emits signed webhooks via X-Buildkite-Signature header (opt-in)"
+      ],
+      "support_level": "best-effort"
+    },
+    "drone": {
+      "id": "drone",
+      "display_name": "Drone CI",
+      "status_api_path": "/api/repos/{owner}/{repo}/builds?branch={ref}",
+      "log_stream_api": "/api/repos/{owner}/{repo}/builds/{num}/logs/{stage}/{step}",
+      "rerun_api": "POST /api/repos/{owner}/{repo}/builds/{num}",
+      "auth_modes": ["bearer_token"],
+      "rate_limits": {
+        "authenticated_per_hour": null,
+        "app_per_hour": null,
+        "notes": "Self-managed; no central rate limit — configurable per server"
+      },
+      "webhook_event_taxonomy": [
+        "build.created",
+        "build.updated",
+        "build.completed"
+      ],
+      "status_enum": ["pending", "waiting_on_dependencies", "running"],
+      "conclusion_enum": ["success", "failure", "error", "killed", "declined"],
+      "supports_check_runs": false,
+      "supports_required_status": false,
+      "gate_merge_queue": false,
+      "known_quirks": [
+        "Requires DRONE_SERVER env to point at the instance — no SaaS default",
+        "Uses /api/repos/{owner}/{repo}/builds; Woodpecker fork renamed to /pipelines in v2+",
+        "No log streaming in stub adapter — use /logs endpoint in caller loop"
+      ],
+      "support_level": "best-effort"
+    },
+    "woodpecker": {
+      "id": "woodpecker",
+      "display_name": "Woodpecker CI",
+      "status_api_path": "/api/repos/{owner}/{repo}/pipelines?branch={ref}",
+      "log_stream_api": "/api/repos/{owner}/{repo}/pipelines/{num}/logs/{step}",
+      "rerun_api": "POST /api/repos/{owner}/{repo}/pipelines/{num}",
+      "auth_modes": ["bearer_token"],
+      "rate_limits": {
+        "authenticated_per_hour": null,
+        "app_per_hour": null,
+        "notes": "Self-managed; community fork of Drone — no central rate limit"
+      },
+      "webhook_event_taxonomy": [
+        "pipeline.created",
+        "pipeline.updated",
+        "pipeline.completed"
+      ],
+      "status_enum": ["pending", "waiting_on_dependencies", "running"],
+      "conclusion_enum": ["success", "failure", "error", "killed", "declined"],
+      "supports_check_runs": false,
+      "supports_required_status": false,
+      "gate_merge_queue": false,
+      "known_quirks": [
+        "Soft-fork of Drone — API shape substantially identical; Weaver's Drone adapter class is shared",
+        "v2+ uses /pipelines; pre-v2 still accepts /builds — adapter tries both in order",
+        "Requires WOODPECKER_SERVER env"
+      ],
+      "support_level": "best-effort"
+    },
+    "tekton": {
+      "id": "tekton",
+      "display_name": "Tekton Pipelines",
+      "status_api_path": "kubectl get pipelinerun -n {ns} -l weaver.ref={ref}",
+      "log_stream_api": "kubectl logs -f {pod}",
+      "rerun_api": "kubectl create -f <pipelinerun.yaml>",
+      "auth_modes": ["kubeconfig", "service_account_token"],
+      "rate_limits": {
+        "authenticated_per_hour": null,
+        "app_per_hour": null,
+        "notes": "No HTTP rate limit — governed by kube-apiserver QPS/burst"
+      },
+      "webhook_event_taxonomy": [
+        "dev.tekton.event.pipelinerun.started.v1",
+        "dev.tekton.event.pipelinerun.successful.v1",
+        "dev.tekton.event.pipelinerun.failed.v1"
+      ],
+      "status_enum": ["Unknown", "Running", "PipelineRunPending"],
+      "conclusion_enum": [
+        "Succeeded",
+        "Failed",
+        "Cancelled",
+        "PipelineRunTimeout"
+      ],
+      "supports_check_runs": false,
+      "supports_required_status": false,
+      "gate_merge_queue": false,
+      "known_quirks": [
+        "No built-in repo/ref filter on PipelineRuns — operators must label with weaver.ref for Weaver to correlate",
+        "Reads .status.conditions[type=Succeeded].status (True/False/Unknown) for terminal mapping",
+        "Shells out to kubectl — degraded when no current-context",
+        "Cluster-scoped: no public SaaS endpoint"
+      ],
+      "support_level": "best-effort"
+    },
+    "argocd": {
+      "id": "argocd",
+      "display_name": "ArgoCD",
+      "status_api_path": "kubectl get application -n argocd",
+      "log_stream_api": null,
+      "rerun_api": null,
+      "auth_modes": ["kubeconfig", "service_account_token", "argocd_token"],
+      "rate_limits": {
+        "authenticated_per_hour": null,
+        "app_per_hour": null,
+        "notes": "Governed by kube-apiserver; ArgoCD server has its own gRPC limits"
+      },
+      "webhook_event_taxonomy": [
+        "application.sync.started",
+        "application.sync.succeeded",
+        "application.sync.failed",
+        "application.health.degraded"
+      ],
+      "status_enum": ["Synced", "OutOfSync", "Unknown"],
+      "conclusion_enum": [
+        "Healthy",
+        "Degraded",
+        "Progressing",
+        "Missing",
+        "Suspended"
+      ],
+      "supports_check_runs": false,
+      "supports_required_status": false,
+      "gate_merge_queue": false,
+      "known_quirks": [
+        "GitOps — CI runs upstream; ArgoCD surface is drift/health, not gate-ready",
+        "Application sync + health are orthogonal axes; success = Synced AND Healthy",
+        "Read-only in Weaver: no auto-sync or rollback triggering",
+        "Sync triggering not implemented — Weaver observes-only for ArgoCD"
+      ],
+      "support_level": "read-only"
+    },
+    "fluxcd": {
+      "id": "fluxcd",
+      "display_name": "FluxCD",
+      "status_api_path": "kubectl get kustomization -n flux-system",
+      "log_stream_api": null,
+      "rerun_api": null,
+      "auth_modes": ["kubeconfig", "service_account_token"],
+      "rate_limits": {
+        "authenticated_per_hour": null,
+        "app_per_hour": null,
+        "notes": "Governed by kube-apiserver QPS/burst; no dedicated Flux rate limit"
+      },
+      "webhook_event_taxonomy": [
+        "Kustomization.ReconciliationSucceeded",
+        "Kustomization.ReconciliationFailed",
+        "HelmRelease.UpgradeSucceeded",
+        "HelmRelease.UpgradeFailed"
+      ],
+      "status_enum": ["Progressing", "Unknown"],
+      "conclusion_enum": ["Ready", "ReconciliationFailed", "Stalled", "Suspended"],
+      "supports_check_runs": false,
+      "supports_required_status": false,
+      "gate_merge_queue": false,
+      "known_quirks": [
+        "GitOps — drift detection only, never gate-ready",
+        "Reads Kustomization and HelmRelease CRDs from flux-system namespace",
+        "Ready condition is authoritative: status=True means reconciled",
+        "Read-only in Weaver: flux reconcile is operator territory"
+      ],
+      "support_level": "read-only"
+    }
+  }
+}
