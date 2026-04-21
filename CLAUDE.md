@@ -13,7 +13,7 @@ Weaver is hook-driven, not skill-invoked. Auto-orchestration is the product's re
 | On boundary | branch-workflow + commit-intelligence | W3 picks branch strategy, W1 drafts Conventional Commits message |
 | On cluster close | pr-lifecycle | W4 opens draft PR, routes reviewers, subscribes to CI status |
 | `PreToolUse(Bash)` | weaver-gate | Destructive-op decision-gate (force-push, rebase, reset, clean) |
-| On CI status change | ci-reader | Reads status from 8 CI systems, gates merge-queue entry |
+| On CI status change | ci-reader | Reads status from 10 CI systems (see [plugins/ci-reader/state/ci-registry.json](plugins/ci-reader/state/ci-registry.json)), gates merge-queue entry |
 | `PreCompact` | weaver-learning | W5 checkpoints developer preferences + cluster state |
 
 ## Named engines (brand standard)
@@ -39,12 +39,14 @@ Weaver is hook-driven, not skill-invoked. Auto-orchestration is the product's re
 | AWS CodeCommit | read-only | SigV4; no native PR UI |
 | SourceHut | read-only | Mailing-list PRs — `git send-email`, no `pulls` abstraction |
 
+Registry source of truth: **10 hosts** (github, gitlab, bitbucket-cloud, bitbucket-dc, azure-devops, gitea, forgejo, codeberg, codecommit, sourcehut) in [plugins/capability-memory/state/capability-registry.json](plugins/capability-memory/state/capability-registry.json) — gitea/forgejo/codeberg are collapsed above for presentation only. Schema v1.1 (24 fields/host) includes `signed_commit_verification`, `protected_branch_api`, `default_branch_convention`, `lfs_variant`, `release_api_path`, `webhook_event_taxonomy`, `pat_scopes_required`, `signed_tag_support`, `commit_status_api_shape`, `supports_draft_protected_branch_override`.
+
 ## CI/CD boundary
 
-Weaver **reads** CI status across 8 systems (GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone/Woodpecker, Tekton, ArgoCD/FluxCD). Weaver **does not own** CI execution — that's Assembler's domain. Boundary enforced via the enchanted-mcp event bus:
+Weaver **reads** CI status across 10 systems (GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone, Woodpecker, Tekton, ArgoCD, FluxCD — ArgoCD/FluxCD are read-only, not merge-queue gating; see [plugins/ci-reader/state/ci-registry.json](plugins/ci-reader/state/ci-registry.json)). Weaver is a git-workflow plugin; CI execution belongs to your existing CI pipelines (push-triggered workflows, etc.). Cross-plugin signals flow via the enchanted-mcp event bus:
 
 - **Weaver publishes**: `weaver.task.boundary.detected`, `weaver.commit.committed`, `weaver.pr.drafted`, `weaver.pr.ready`, `weaver.destructive.detected`, `weaver.ci.status.observed`
-- **Weaver subscribes**: `assembler.pipeline.status.changed`, `hornet.change.classified`, `hornet.session.continuity.node`, `hornet.reviewer.availability.changed`, `reaper.prepush.secret.detected`, `nook.budget.threshold.crossed`
+- **Weaver subscribes**: `hornet.change.classified`, `hornet.session.continuity.node`, `hornet.reviewer.availability.changed`, `reaper.prepush.secret.detected`, `nook.budget.threshold.crossed`
 
 ## Destructive-op contract
 
@@ -60,13 +62,12 @@ Audit log: `plugins/*/state/audit.jsonl` — append-only, Allay-A4 atomic patter
 ## Behavioral contracts
 
 1. **IMPORTANT — Silent by default, loud when risky.** Auto-orchestration is invisible when it works. Decision-gates are blocking only for destructive ops. Nothing routine asks for permission.
-2. **YOU MUST respect the Assembler ownership boundary.** Weaver reads CI status; Weaver never triggers a build. If a workflow requires a build trigger, publish to `weaver.ci.trigger.requested` and let Assembler fulfil it.
-3. **YOU MUST NOT write history rewrites without gate confirmation.** Even if the developer asks, route through `weaver-gate`. The developer's explicit confirmation is logged, not assumed.
-4. **ESCALATE on SourceHut push operations.** SourceHut uses mailing-list PRs — if the developer's remote points to SourceHut, degrade to patch-email mode and surface the divergence.
-5. **ESCALATE when the capability registry is stale.** If `state/capability-registry.json` is older than 30 days and the developer is on a Tier-1 host, nudge toward a nightly-refresh check.
-6. **Ask, don't guess.** If `git status` is dirty at session-start or the branch naming doesn't match the detected workflow, ask before continuing. Never fabricate a task-boundary when none is certain.
-7. **YOU MUST defer secret scanning to Reaper.** The `reaper.prepush.secret.detected` event is authoritative — Weaver blocks push when it fires, never second-guesses.
-8. **YOU MUST NOT inflate clustering confidence.** W2 emits confidence per boundary; when confidence < 0.7, route to the Opus boundary-detector agent for judgment rather than acting autonomously.
+2. **YOU MUST NOT write history rewrites without gate confirmation.** Even if the developer asks, route through `weaver-gate`. The developer's explicit confirmation is logged, not assumed.
+3. **ESCALATE on SourceHut push operations.** SourceHut uses mailing-list PRs — if the developer's remote points to SourceHut, degrade to patch-email mode and surface the divergence.
+4. **ESCALATE when the capability registry is stale.** If `state/capability-registry.json` is older than 30 days and the developer is on a Tier-1 host, nudge toward a nightly-refresh check.
+5. **Ask, don't guess.** If `git status` is dirty at session-start or the branch naming doesn't match the detected workflow, ask before continuing. Never fabricate a task-boundary when none is certain.
+6. **YOU MUST defer secret scanning to Reaper.** The `reaper.prepush.secret.detected` event is authoritative — Weaver blocks push when it fires, never second-guesses.
+7. **YOU MUST NOT inflate clustering confidence.** W2 emits confidence per boundary; when confidence < 0.7, route to the Opus boundary-detector agent for judgment rather than acting autonomously.
 
 ## Brand standard compliance
 
@@ -78,7 +79,7 @@ Audit log: `plugins/*/state/audit.jsonl` — append-only, Allay-A4 atomic patter
 
 ## Anti-patterns
 
-- **Owning CI execution.** Drifting into "Weaver builds the pipeline" violates the Assembler boundary. Triggering belongs on `weaver.ci.trigger.requested` → Assembler.
+- **Owning CI execution.** Weaver is a reader, not a runner — do not add build-trigger code paths. CI execution belongs to your existing CI pipelines.
 - **Auto-amending pushed commits.** W1's safe-amend detection must block this. Even if the Conventional Commits message is wrong, the fix is a follow-up commit, not `--amend`.
 - **Silent history rewrite on late-boundary correction.** W2's late-boundary correction surfaces as a skill invocation, never a silent `git rebase -i` or `git reset`.
 - **Reviewer storms.** W4 caps auto-requested reviewers at 3. Larger pools rotate across subsequent PRs, not stacked on one.

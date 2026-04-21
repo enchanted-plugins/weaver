@@ -28,7 +28,7 @@ Built from the commit log of teams that ship: every flow exists because someone,
 > `git push -u origin feat/oauth-pkce-verify`. weaver-gate inspects — safe push, no block.
 > Opens a draft PR against main. Body composed from the W2 cluster + commits + Hornet V4 session continuity: "What changed", "Why", "How it was verified", "Rollback plan".
 > **W4** ranks reviewers from `git log` blame × recency × CODEOWNERS × Hornet availability. Top-3 requested: @dave (blame + CODEOWNERS), @alice (blame), @ben (CODEOWNERS).
-> Subscribes to Assembler's pipeline-status events. When all required checks go green, auto-enqueues on the GitHub Merge Queue.
+> Subscribes to CI status via ci-reader. When all required checks go green, auto-enqueues on the GitHub Merge Queue.
 > **W5** records: scope "auth" seen, slug-style kebab confirmed, W4's top pick accepted.
 >
 > You typed **0** git commands. Zero destructive ops triggered. Commits signed. PR reviewed and merged.
@@ -52,7 +52,7 @@ The question this plugin answers: *How does this ship?*
 Not for:
 
 - Solo repos where you already know every command by muscle memory — Weaver's value scales with team size and host diversity.
-- Teams who want a tool that **triggers** builds — Weaver reads CI; the Assembler boundary is explicit and enforced.
+- Teams who want a tool that **triggers** builds — Weaver reads CI, never triggers builds. CI execution belongs to your existing CI pipelines.
 
 ## Contents
 
@@ -105,7 +105,7 @@ Weaver runs inside your Claude Code session and drives git on your behalf:
 - **Scaffolds branches.** W3 detects your workflow (GitHub Flow / Trunk-Based / GitFlow / Release Flow / Stacked Diffs) and names branches to match (`feat/x`, `feature/x`, `user/x`, bare-topic).
 - **Drafts commits.** W1 Sonnet drafts a Conventional Commits message; Haiku + Python stdlib validate format + policy; SSH/GPG signed; DCO sign-off if the repo wants it.
 - **Opens PRs.** W4 ranks reviewers (blame × recency × CODEOWNERS × availability), composes a 4-section body from W2 cluster + Hornet V4 continuity, dispatches to the right host adapter.
-- **Reads CI.** ci-reader normalizes check runs from 10 systems. Never triggers a build itself (that's Assembler's lane).
+- **Reads CI.** ci-reader normalizes check runs from 10 systems. Never triggers a build itself — Weaver is a git-workflow plugin; CI execution belongs to your existing CI pipelines.
 - **Merges.** Strategy inferred from workflow; merge-queue-enqueues where configured.
 - **Guards destructive ops.** weaver-gate intercepts `PreToolUse(Bash)` — force-push / filter-branch / clean -fdx / rebase-i-of-pushed etc. route through a Hornet-style decision-gate before they can run.
 - **Learns.** W5 Gauss EMA adapts priors per-developer. Past sample 10, the defaults give way to what you actually do.
@@ -228,9 +228,11 @@ Expected: `/weaver:setup` classifies your host + CI + auth in one pass, promptin
 
 **Agent tier spread:** 3 Opus (boundary-detector, conflict-resolver, pr-description-crafter), 1 Sonnet (commit-drafter), 1 Haiku (message-validator) — orchestration on Opus, execution on Sonnet, validation on Haiku. See [CLAUDE.md](CLAUDE.md) for the tiering contract.
 
+**Operational skills (above the 15 workflow commands):** `/weaver:stats` (per-plugin metrics), `/weaver:audit` (weaver-gate decision log), `/weaver:audit-pdf` (dark-themed PDF export), `/weaver:discard` (reset a stuck W2 cluster), `/weaver:gate-check` (pre-flight PR gate probe), `/weaver:review-boundary` (Opus boundary-detector escalation when W2 confidence < 0.7). Surfaces the hooks' internal state without widening the auto-orchestration surface.
+
 ## What You Get Per Session
 
-Four hook events fan out into six color-coded journals — one per sub-plugin whose state actually persists — and converge on the enchanted-mcp bus plus the 15-command query surface. Color maps engines to journals: blue = boundary-segmenter (W2) · amber = capability-memory · red = weaver-gate · yellow = commit-intelligence + pr-lifecycle (W1 + W4) · purple = weaver-learning (W5).
+Four hook events fan out into six color-coded journals — one per sub-plugin whose state actually persists — and converge on the enchanted-mcp bus plus the 15-command query surface (plus 6 operational skills listed above). Color maps engines to journals: blue = boundary-segmenter (W2) · amber = capability-memory · red = weaver-gate · yellow = commit-intelligence + pr-lifecycle (W1 + W4) · purple = weaver-learning (W5). The event chain now wires end-to-end: `boundary-segmenter` → `branch-workflow` + `commit-intelligence` → `pr-lifecycle`. weaver-gate's destructive-op classifier covers the `amend_of_pushed_head` pattern alongside force-push, filter-branch, and clean -fdx. ci-reader is driven by [plugins/ci-reader/state/ci-registry.json](plugins/ci-reader/state/ci-registry.json), which gates merge-queue entry and marks ArgoCD/FluxCD as read-only (not gating).
 
 <p align="center">
   <a href="docs/assets/state-flow.mmd" title="View state-flow diagram source (Mermaid)">
@@ -315,7 +317,7 @@ Everything a team does with git/PR/CI — wired through real host + CI adapters.
 ### CI & safety
 
 - **`/weaver:ci-status`** — aggregate CI status across every configured system
-- **`/weaver:retry-ci`** — rerun failing checks (existing runs only — new-build triggers are Assembler's lane)
+- **`/weaver:retry-ci`** — rerun failing checks (existing runs only — Weaver never triggers fresh builds)
 - **`/weaver:dry-run`** — preview any git command through the destructive-op classifier without executing
 
 ### Learning
@@ -349,7 +351,7 @@ Every adapter follows the same contract: token resolution → authenticated requ
 
 ## 10 CI Systems, All Real
 
-Same pattern: every CI adapter reads status via its native API (HTTP for most, `kubectl` for k8s-native). Returns a normalized `Check` list — empty when credentials/tooling are absent, never fabricated. Weaver reads; **Assembler runs.**
+Same pattern: every CI adapter reads status via its native API (HTTP for most, `kubectl` for k8s-native). Returns a normalized `Check` list — empty when credentials/tooling are absent, never fabricated. Weaver reads CI; it never triggers builds.
 
 | System | Transport | Gate-ready? |
 |--------|-----------|-------------|
@@ -488,7 +490,7 @@ Weaver follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Break
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). TL;DR: zero pip installs, honest scoring, per-sub-plugin structure identical, tests pass, Assembler boundary respected (Weaver reads CI; Weaver does not trigger builds).
+See [CONTRIBUTING.md](CONTRIBUTING.md). TL;DR: zero pip installs, honest scoring, per-sub-plugin structure identical, tests pass, no build-triggering code paths (Weaver reads CI; Weaver does not trigger builds).
 
 ---
 
@@ -519,6 +521,6 @@ MIT. See [LICENSE.txt](LICENSE.txt).
 
 Weaver is the **git-workflow layer** — it coordinates branch / commit / PR / CI / merge across 10 git hosts and 10 CI systems. Upstream, it consumes signals from Flux (commits emerge from Flux-engineered sessions), Hornet (trust-gaming gate pattern reused in weaver-gate; W4 reviewer availability borrows Hornet's signal), and Mantis (findings surfaced on the PR body at `/weaver:pr` time). Downstream, the W2 boundary-segmentation events feed Nook's per-task cost attribution.
 
-Weaver does **not** trigger CI builds — that's Assembler's lane, and the boundary is explicit in [CLAUDE.md](CLAUDE.md) and enforced in every CONTRIBUTING review. Weaver **reads** CI; it does not start it. Weaver also does not engineer prompts (Flux), track tokens (Allay), score change trust (Hornet), review code correctness (Mantis), or scan security surfaces (Reaper).
+Weaver does **not** trigger CI builds — Weaver is a git-workflow plugin, and CI execution belongs to your existing CI pipelines (push-triggered workflows, etc.). Weaver **reads** CI; it does not start it. Weaver also does not engineer prompts (Flux), track tokens (Allay), score change trust (Hornet), review code correctness (Mantis), or scan security surfaces (Reaper).
 
 See [docs/ecosystem.md § Data Flow Between Plugins](docs/ecosystem.md#data-flow-between-plugins) for the full map.

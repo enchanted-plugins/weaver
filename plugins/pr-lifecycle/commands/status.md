@@ -26,7 +26,7 @@ PR:             #142 "feat(auth): add OAuth PKCE flow" — draft
 - W2 cluster: `plugins/boundary-segmenter/state/boundary-clusters.json`
 - Commits: `git log origin/<base>..HEAD`
 - PR state: `gh pr view --json ...` (GitHub) or host-adapter call
-- CI: ci-reader plugin's `assembler.pipeline.status.changed` subscription
+- CI: ci-reader plugin's adapter-polled status
   or direct `gh api ...check-runs` call
 - Reviewers: W4 Path-History Reviewer Routing result cached in
   `state/last-reviewer-suggestion.json`

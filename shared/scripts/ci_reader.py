@@ -6,9 +6,9 @@ Detects which CI systems are configured in the current repo, queries them
 for the status of a ref, normalizes into `Check` objects, and returns a
 summary.
 
-Weaver reads; Assembler (Phase 3) triggers builds. When a trigger is
-needed, this module publishes `weaver.ci.trigger.requested` to
-state/metrics.jsonl and returns.
+Weaver reads CI; it never triggers builds. Weaver is a git-workflow
+plugin; CI execution belongs to your existing CI pipelines
+(push-triggered workflows, etc.).
 
 Stdlib only.
 """

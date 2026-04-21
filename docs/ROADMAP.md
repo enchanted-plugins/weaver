@@ -103,9 +103,8 @@ Add 5 more plugins covering code quality, testing, DevOps, documentation, and AP
 |---|--------|----------|-----------|----------|
 | 6 | **Athena** | Is this code good? | AST Diff + Weighted Decision Trees | Code review |
 | 7 | **Crucible** | Do the tests catch bugs? | Genetic Mutation Testing | Testing/QA |
-| 8 | **Assembler** | Can this deploy? | Critical Path DAG Optimization | DevOps/CI |
-| 9 | **Scribe** | Is the docs up to date? | TF-IDF Extractive Summarization | Documentation |
-| 10 | **Schema** | Is the API contract valid? | Semantic Version Diffing | API design |
+| 8 | **Scribe** | Is the docs up to date? | TF-IDF Extractive Summarization | Documentation |
+| 9 | **Schema** | Is the API contract valid? | Semantic Version Diffing | API design |
 
 ### Milestone: 10 plugins + enhanced MCP
 - All 10 plugins connected to enchanted-mcp
@@ -176,7 +175,6 @@ Every plugin is named after a game entity that metaphorically describes its func
 | **Nook** | Tom Nook | Animal Crossing | Merchant-banker who tracks every bell you owe — cost accounting |
 | **Athena** | Athena | Hades | Goddess of wisdom who judges your combat quality and grants boons for excellence — code review |
 | **Crucible** | Crucible | Terraria | Endgame crafting station forged in hellfire — tests things to destruction — mutation testing |
-| **Assembler** | Assembling Machine | Factorio | Takes parts in, produces artifacts out, chains into automated pipelines — CI/CD building |
 | **Weaver** | Weavers | Hollow Knight | Silk-spinners and Hornet's ancestral kin who weave threads into coherent patterns — weaving branches, commits, and PRs into one history |
 
 ## Brand Standard (All Plugins)

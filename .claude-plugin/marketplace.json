@@ -1,7 +1,7 @@
 {
   "name": "weaver",
   "display_name": "Weaver — Git Workflow Layer",
-  "description": "Auto-orchestrates branch/commit/PR per task boundary; reads CI status across 9 hosts and 8 CI systems. Enchanted-plugins Phase 4 plugin #21.",
+  "description": "Auto-orchestrates branch/commit/PR per task boundary; reads CI status across 10 hosts and 10 CI systems. Enchanted-plugins Phase 4 plugin #21.",
   "version": "0.0.1",
   "license": "MIT",
   "homepage": "https://github.com/enchanted-plugins/weaver",
@@ -33,7 +33,7 @@
     },
     {
       "name": "ci-reader",
-      "description": "Read-only status + log-stream across GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone/Woodpecker, Tekton, ArgoCD/FluxCD. Weaver reads; Assembler runs."
+      "description": "Read-only CI status + log streaming across GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone/Woodpecker, Tekton, ArgoCD/FluxCD."
     },
     {
       "name": "weaver-learning",

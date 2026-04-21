@@ -132,7 +132,7 @@
 <div class="brand-bar"></div>
 <div class="container">
   <h1>Weaver <span>Architecture Explorer</span></h1>
-  <div class="subtitle">Auto-generated from codebase — 2026-04-17 14:14 UTC</div>
+  <div class="subtitle">Auto-generated from codebase — 2026-04-21 13:29 UTC</div>
 
   <h2>System Diagrams</h2>
   <div class="tabs">
@@ -150,31 +150,35 @@
     boundary_segmenter_out(["state/metrics.jsonl"])
     boundary_segmenter --> boundary_segmenter_out
     style boundary_segmenter fill:#161b22,stroke:#bc8cff,color:#e6edf3
-    branch_workflow["branch-workflow<br/><small>—</small>"]
+    branch_workflow["branch-workflow<br/><small>PostToolUse</small>"]
     CC --> branch_workflow
     branch_workflow_out(["state/metrics.jsonl"])
     branch_workflow --> branch_workflow_out
+    style branch_workflow fill:#161b22,stroke:#3fb950,color:#e6edf3
     capability_memory["capability-memory<br/><small>SessionStart</small>"]
     CC --> capability_memory
     capability_memory_out(["state/metrics.jsonl"])
     capability_memory --> capability_memory_out
     style capability_memory fill:#161b22,stroke:#8b949e,color:#e6edf3
-    ci_reader["ci-reader<br/><small>—</small>"]
+    ci_reader["ci-reader<br/><small>SessionStart</small>"]
     CC --> ci_reader
     ci_reader_out(["state/metrics.jsonl"])
     ci_reader --> ci_reader_out
-    commit_intelligence["commit-intelligence<br/><small>—</small>"]
+    style ci_reader fill:#161b22,stroke:#8b949e,color:#e6edf3
+    commit_intelligence["commit-intelligence<br/><small>PostToolUse</small>"]
     CC --> commit_intelligence
     commit_intelligence_out(["state/metrics.jsonl"])
     commit_intelligence --> commit_intelligence_out
+    style commit_intelligence fill:#161b22,stroke:#3fb950,color:#e6edf3
     full["full<br/><small>—</small>"]
     CC --> full
     full_out(["state/metrics.jsonl"])
     full --> full_out
-    pr_lifecycle["pr-lifecycle<br/><small>—</small>"]
+    pr_lifecycle["pr-lifecycle<br/><small>PostToolUse</small>"]
     CC --> pr_lifecycle
     pr_lifecycle_out(["state/metrics.jsonl"])
     pr_lifecycle --> pr_lifecycle_out
+    style pr_lifecycle fill:#161b22,stroke:#3fb950,color:#e6edf3
     weaver_gate["weaver-gate<br/><small>PreToolUse</small>"]
     CC --> weaver_gate
     weaver_gate_out(["state/metrics.jsonl"])
@@ -198,6 +202,9 @@
         boundary_segmenter_h1_trigger --> boundary_segmenter_h1_script
     end
     subgraph branch_workflow["branch-workflow"]
+        branch_workflow_h0_trigger["PostToolUse<br/>Edit | Write | MultiEdit"]
+        branch_workflow_h0_script["on-boundary.sh<br/><small>timeout: 10s</small>"]
+        branch_workflow_h0_trigger --> branch_workflow_h0_script
     end
     subgraph capability_memory["capability-memory"]
         capability_memory_h0_trigger["SessionStart<br/>*"]
@@ -205,12 +212,21 @@
         capability_memory_h0_trigger --> capability_memory_h0_script
     end
     subgraph ci_reader["ci-reader"]
+        ci_reader_h0_trigger["SessionStart<br/>*"]
+        ci_reader_h0_script["load-ci-registry.sh<br/><small>timeout: 10s</small>"]
+        ci_reader_h0_trigger --> ci_reader_h0_script
     end
     subgraph commit_intelligence["commit-intelligence"]
+        commit_intelligence_h0_trigger["PostToolUse<br/>Edit | Write | MultiEdit"]
+        commit_intelligence_h0_script["on-boundary.sh<br/><small>timeout: 10s</small>"]
+        commit_intelligence_h0_trigger --> commit_intelligence_h0_script
     end
     subgraph full["full"]
     end
     subgraph pr_lifecycle["pr-lifecycle"]
+        pr_lifecycle_h0_trigger["PostToolUse<br/>Bash"]
+        pr_lifecycle_h0_script["on-commit.sh<br/><small>timeout: 10s</small>"]
+        pr_lifecycle_h0_trigger --> pr_lifecycle_h0_script
     end
     subgraph weaver_gate["weaver-gate"]
         weaver_gate_h0_trigger["PreToolUse<br/>Bash"]
@@ -237,11 +253,14 @@
     boundary_segmenter_metrics["boundary-segmenter/state/metrics.jsonl<br/><small>weaver.task.boundary.detected</small>"]
     Write --> boundary_segmenter_metrics
     branch_workflow_metrics["branch-workflow/state/metrics.jsonl<br/><small>weaver.workflow.detected<br/>weaver.branch.created</small>"]
+    Write --> branch_workflow_metrics
     capability_memory_metrics["capability-memory/state/metrics.jsonl<br/><small>capability_loaded<br/>gitlab_version_probed</small>"]
     ci_reader_metrics["ci-reader/state/metrics.jsonl<br/><small>weaver.ci.status.observed</small>"]
     commit_intelligence_metrics["commit-intelligence/state/metrics.jsonl<br/><small>weaver.commit.drafted<br/>weaver.commit.committed</small>"]
+    Write --> commit_intelligence_metrics
     full_metrics["full/state/metrics.jsonl<br/><small></small>"]
     pr_lifecycle_metrics["pr-lifecycle/state/metrics.jsonl<br/><small>weaver.pr.drafted<br/>weaver.pr.ready<br/>weaver.pr.merged</small>"]
+    Bash --> pr_lifecycle_metrics
     weaver_gate_metrics["weaver-gate/state/metrics.jsonl<br/><small>weaver.destructive.detected<br/>weaver.destructive.confirmed</small>"]
     Bash --> weaver_gate_metrics
     weaver_learning_metrics["weaver-learning/state/metrics.jsonl<br/><small>priors_loaded<br/>preferences_checkpointed</small>"]
@@ -263,7 +282,7 @@
         t1["Turn N: Tool Call"]
         t1 --> pre["PreToolUse<br/>weaver-gate"]
         pre --> exec["Tool Executes"]
-        exec --> post["PostToolUse<br/>boundary-segmenter"]
+        exec --> post["PostToolUse<br/>boundary-segmenter, branch-workflow, commit-intelligence, pr-lifecycle"]
         post --> t1
     end
     turns -->|"Context full"| compact["⚠️ Compaction"]
@@ -289,13 +308,13 @@
           <div class="section-label">Agents</div>
           <div class="item"><strong>boundary-detector</strong> <span class="dim">(claude-opus-4-7, narrow)</span></div>
           <div class="section-label">Commands</div>
-          <div class="dim">None</div>
+          <div class="item"><code>weaver:review-boundary</code></div>
         </div>
         <div class="plugin-card">
           <h3>branch-workflow</h3>
           <p class="desc">W3 — Workflow-Pattern Classifier. Infers the active branching model (GitHub Flow / Trunk-Based / GitFlow / Release Flow / Stacked Diffs / Unknown) from repo signals and suggests a branch name for the next task boundary. Per-subtree support for monorepos via .weaver/workflow-map.yaml.</p>
           <div class="section-label">Hooks</div>
-          <div class="dim">None</div>
+          <div class="hook"><span class="phase">PostToolUse</span> <span class="matcher">Edit|Write|MultiEdit</span> → <code>on-boundary.sh</code> <span class="dim">(10s)</span></div>
           <div class="section-label">Skills</div>
           <div class="item"><strong>workflow-detection</strong></div>
           <div class="section-label">Agents</div>
@@ -313,25 +332,25 @@
           <div class="section-label">Agents</div>
           <div class="dim">None</div>
           <div class="section-label">Commands</div>
-          <div class="dim">None</div>
+          <div class="item"><code>weaver:setup</code></div>
         </div>
         <div class="plugin-card">
           <h3>ci-reader</h3>
-          <p class="desc">Read-only CI status + log streaming across GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone/Woodpecker, Tekton, ArgoCD/FluxCD. Weaver reads; Assembler runs. Normalizes per-system check payloads into a typed Check interface and emits weaver.ci.status.observed events. GitHub Actions fully implemented via gh CLI; 7 other systems stub and degrade to manual-handoff.</p>
+          <p class="desc">Read-only CI status + log streaming across GitHub Actions, GitLab CI, CircleCI, Jenkins, Buildkite, Drone/Woodpecker, Tekton, ArgoCD/FluxCD. Ships ci-registry.json — a declarative capability surface for all 10 systems (auth modes, rate limits, status/conclusion enums, webhook event taxonomy, known quirks) loaded at SessionStart. Normalizes per-system check payloads into a typed Check interface and emits weaver.ci.status.observed events. GitHub Actions fully implemented via gh CLI; 7 other systems stub and degrade to manual-handoff; ArgoCD/FluxCD are GitOps read-only drift detection.</p>
           <div class="section-label">Hooks</div>
-          <div class="dim">None</div>
+          <div class="hook"><span class="phase">SessionStart</span> <span class="matcher">*</span> → <code>load-ci-registry.sh</code> <span class="dim">(10s)</span></div>
           <div class="section-label">Skills</div>
           <div class="dim">None</div>
           <div class="section-label">Agents</div>
           <div class="dim">None</div>
           <div class="section-label">Commands</div>
-          <div class="item"><code>weaver:ci-status</code></div>
+          <div class="item"><code>weaver:ci-status</code></div><div class="item"><code>weaver:retry-ci</code></div>
         </div>
         <div class="plugin-card">
           <h3>commit-intelligence</h3>
           <p class="desc">W1 — Myers-Diff Conventional Classifier. Drafts Conventional Commits messages via a Sonnet agent (Stage 1), validates format + policy via a Haiku agent and a Python stdlib rules pass (Stage 2). Safe-amend detection blocks rewriting pushed commits.</p>
           <div class="section-label">Hooks</div>
-          <div class="dim">None</div>
+          <div class="hook"><span class="phase">PostToolUse</span> <span class="matcher">Edit|Write|MultiEdit</span> → <code>on-boundary.sh</code> <span class="dim">(10s)</span></div>
           <div class="section-label">Skills</div>
           <div class="dim">None</div>
           <div class="section-label">Agents</div>
@@ -355,13 +374,13 @@
           <h3>pr-lifecycle</h3>
           <p class="desc">W4 — Path-History Reviewer Routing + idempotent PR state machine. Opens draft PRs with session-context descriptions (upgrades to Hornet V4 when available), ranks reviewers via git-blame + CODEOWNERS + optional availability events, drives merge-queue integration. GitHub fully implemented via gh CLI; 9 other hosts stub cleanly and degrade to manual-handoff mode.</p>
           <div class="section-label">Hooks</div>
-          <div class="dim">None</div>
+          <div class="hook"><span class="phase">PostToolUse</span> <span class="matcher">Bash</span> → <code>on-commit.sh</code> <span class="dim">(10s)</span></div>
           <div class="section-label">Skills</div>
           <div class="item"><strong>pr-description-crafter</strong></div><div class="item"><strong>reviewer-router</strong></div>
           <div class="section-label">Agents</div>
           <div class="item"><strong>conflict-resolver</strong> <span class="dim">(claude-opus-4-7, medium)</span></div><div class="item"><strong>pr-description-crafter</strong> <span class="dim">(claude-opus-4-7, medium)</span></div>
           <div class="section-label">Commands</div>
-          <div class="item"><code>weaver:pr</code></div><div class="item"><code>weaver:status</code></div>
+          <div class="item"><code>weaver:close</code></div><div class="item"><code>weaver:gate-check</code></div><div class="item"><code>weaver:merge</code></div><div class="item"><code>weaver:pr</code></div><div class="item"><code>weaver:release</code></div><div class="item"><code>weaver:revert</code></div><div class="item"><code>weaver:reviewers</code></div><div class="item"><code>weaver:status</code></div>
         </div>
         <div class="plugin-card">
           <h3>weaver-gate</h3>
@@ -373,7 +392,7 @@
           <div class="section-label">Agents</div>
           <div class="dim">None</div>
           <div class="section-label">Commands</div>
-          <div class="item"><code>weaver:dry-run</code></div>
+          <div class="item"><code>weaver:audit</code></div><div class="item"><code>weaver:dry-run</code></div>
         </div>
         <div class="plugin-card">
           <h3>weaver-learning</h3>
@@ -385,7 +404,7 @@
           <div class="section-label">Agents</div>
           <div class="dim">None</div>
           <div class="section-label">Commands</div>
-          <div class="dim">None</div>
+          <div class="item"><code>weaver:audit-pdf</code></div><div class="item"><code>discard</code></div><div class="item"><code>weaver:learnings</code></div><div class="item"><code>weaver:stats</code></div>
         </div>
   </div>
 

@@ -28,4 +28,4 @@ Not today. **Live-tested:** GitHub — a real branch created, PR opened via the 
 
 ## Does Weaver trigger CI builds?
 
-No — by design. Weaver's `ci-reader` **reads** check runs from 10 CI systems; it does not start builds. Triggering builds is the Assembler plugin's lane in the ecosystem. The boundary is enforced in [CLAUDE.md](../CLAUDE.md) and called out in every CONTRIBUTING PR review.
+No — by design. Weaver's `ci-reader` **reads** check runs from 10 CI systems; it does not start builds. Weaver is a git-workflow plugin; CI execution belongs to your existing CI pipelines (push-triggered workflows, etc.). The read-only stance is documented in [CLAUDE.md](../CLAUDE.md) and called out in every CONTRIBUTING PR review.

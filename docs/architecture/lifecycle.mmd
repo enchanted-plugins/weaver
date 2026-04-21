@@ -4,7 +4,7 @@ graph TD
         t1["Turn N: Tool Call"]
         t1 --> pre["PreToolUse<br/>weaver-gate"]
         pre --> exec["Tool Executes"]
-        exec --> post["PostToolUse<br/>boundary-segmenter"]
+        exec --> post["PostToolUse<br/>boundary-segmenter, branch-workflow, commit-intelligence, pr-lifecycle"]
         post --> t1
     end
     turns -->|"Context full"| compact["⚠️ Compaction"]

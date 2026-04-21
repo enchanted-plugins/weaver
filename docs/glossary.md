@@ -76,7 +76,7 @@ Weaver's `commit-intelligence` emits [Conventional Commits](https://www.conventi
 
 ## CI systems recognized
 
-Weaver's `ci-reader` is read-only across these systems: GitHub Actions, GitLab CI, Bitbucket Pipelines, Jenkins, CircleCI, Buildkite, TeamCity, Azure Pipelines, Drone, Woodpecker. It never *triggers* builds — see the Assembler boundary in the root `CLAUDE.md`.
+Weaver's `ci-reader` is read-only across these systems: GitHub Actions, GitLab CI, Bitbucket Pipelines, Jenkins, CircleCI, Buildkite, TeamCity, Azure Pipelines, Drone, Woodpecker. It never *triggers* builds — Weaver is a git-workflow plugin; CI execution belongs to your existing CI pipelines.
 
 ## Git hosts recognized
 

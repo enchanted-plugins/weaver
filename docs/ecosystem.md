@@ -19,7 +19,7 @@ Every developer asks these during an AI-assisted session. Each question maps to 
 
 ## Plugin Ecosystem (9 games, Hollow Knight shared by Hornet + Weaver)
 
-Shipped today: Flux, Allay, Hornet, Reaper, Weaver. Planned: Nook, Athena, Crucible, Assembler, + 11 more in Phase 3–4.
+Shipped today: Flux, Allay, Hornet, Reaper, Weaver. Planned: Nook, Athena, Crucible, + 11 more in Phase 3–4.
 
 ```
                           ┌─────────────────┐
@@ -81,7 +81,6 @@ Planned:
   Nook      (2): Exponential Smoothing ─── Budget Boundary
   Athena    (2): AST Diff ─── Decision Trees
   Crucible  (1): Genetic Mutation
-  Assembler (1): Critical Path DAG
 ```
 
 ## Hook Lifecycle Coverage
@@ -114,7 +113,6 @@ PreCompact    ──▶  Allay  (state-keeper: checkpoint before compaction)
 | Animal Crossing | Nook | A game where every transaction is tracked, every loan is remembered, and the economy is always watching |
 | Hades | Athena | A game where gods judge your performance and reward excellence with boons — quality is earned |
 | Terraria | Crucible | A game where you forge items in increasingly extreme conditions to prove their worth |
-| Factorio | Assembler | A game that IS automation — every machine connects to the next in an optimized pipeline |
 | Hollow Knight | Weaver | Weavers are Hornet's ancestral kin — silk-spinners who weave threads into coherent patterns. Branches are threads; merges stitch them into a coherent history. |
 
 ## Infrastructure

@@ -1,6 +1,6 @@
 ---
 name: weaver:retry-ci
-description: Rerun failing CI checks on the current ref. Only re-runs EXISTING runs — never triggers a fresh build from scratch. That's Assembler's ownership.
+description: Rerun failing CI checks on the current ref. Only re-runs EXISTING runs — never triggers a fresh build from scratch.
 allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/../../shared/scripts/ci_reader.py *), Bash(python ${CLAUDE_PLUGIN_ROOT}/../../shared/scripts/ci_reader.py *), Bash(gh run rerun *), Bash(git remote get-url *), Bash(git rev-parse HEAD)
 ---
 
@@ -21,11 +21,10 @@ Rerun failing CI checks on the current branch's HEAD commit.
 
 - **Weaver re-runs existing builds** — e.g., `gh run rerun <run-id>`,
   GitLab's `/jobs/:id/retry`, CircleCI's `/workflow/:id/rerun`.
-- **Weaver does NOT trigger NEW builds**. New builds from scratch are
-  Assembler's job (Phase 3 roadmap). When no existing run can be re-run,
-  Weaver emits `weaver.ci.trigger.requested` to the event bus — if
-  Assembler is installed, it fulfils; otherwise the event sits until
-  someone picks it up.
+- **Weaver does NOT trigger NEW builds.** New builds from scratch are
+  out of scope — Weaver is a git-workflow plugin, and CI execution
+  belongs to your existing CI pipelines (push-triggered workflows, etc.).
+  When no existing run can be re-run, Weaver reports and stops.
 
 ## Flow
 

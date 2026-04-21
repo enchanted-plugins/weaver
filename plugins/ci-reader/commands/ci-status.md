@@ -29,16 +29,6 @@ Aggregate CI status across every system configured in the repo.
    `manual_handoff_systems` — the developer checks those externally and
    either forces the merge via the host or waits for a Weaver adapter.
 
-## Ownership boundary with Assembler
-
-- Weaver reads status. Full stop.
-- Weaver does NOT trigger builds, schedule re-runs from scratch, or
-  compose pipelines. When a run needs to be triggered, Weaver publishes
-  `weaver.ci.trigger.requested` to the event bus; Assembler (Phase 3)
-  fulfils.
-- `gh run rerun` (re-triggering an existing run) is the one exception —
-  and only on explicit developer command, not auto-orchestration.
-
 ## Exit codes
 
 | Code | Meaning |

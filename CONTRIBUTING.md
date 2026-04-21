@@ -15,7 +15,7 @@ Before submitting a PR, verify:
 5. **Every sub-plugin has identical structure** — `agents/`, `commands/`, `hooks/`, `skills/`, `state/`. Run `bash tests/check-plugin-structure.sh` before pushing.
 6. **Destructive-op gate covers new destructive ops** — if you add a new git invocation to any plugin, audit whether it can destroy reflog-unrecoverable state. If yes, it routes through `weaver-gate`.
 7. **Tests pass** — `bash tests/run-all.sh` must exit 0.
-8. **Assembler boundary respected** — no build-triggering code. Publish `weaver.ci.trigger.requested` and let Assembler fulfil it.
+8. **Build triggers not introduced — Weaver reads CI only.** No build-triggering code paths; CI execution belongs to your existing CI pipelines.
 
 ## Structure
 

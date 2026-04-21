@@ -38,7 +38,7 @@ flowchart TB
         evt1["<div style='text-align:center;line-height:1.7;padding:2px 4px'>weaver.task.<br/>boundary.detected<br/><small style='color:#6e7681;letter-spacing:1px'>on&nbsp;W2&nbsp;cluster&nbsp;close</small></div>"] --> evt2["<div style='text-align:center;line-height:1.7;padding:2px 4px'>weaver.commit.<br/>committed<br/><small style='color:#6e7681;letter-spacing:1px'>after&nbsp;W1&nbsp;signs&nbsp;off</small></div>"] --> evt3["<div style='text-align:center;line-height:1.7;padding:2px 4px'>weaver.pr.<br/>ready<br/><small style='color:#6e7681;letter-spacing:1px'>CI&nbsp;green&nbsp;+&nbsp;reviewers</small></div>"] --> evt4["<div style='text-align:center;line-height:1.7;padding:2px 4px'>weaver.destructive.<br/>detected<br/><small style='color:#6e7681;letter-spacing:1px'>gate&nbsp;intercepts</small></div>"]
     end
 
-    Peers["<div style='text-align:center;min-width:940px;line-height:1.8;padding:6px 10px'><b style='letter-spacing:1.5px;color:#79c0ff'>PEER&nbsp;PLUGINS&nbsp;REACT</b><br/><em style='color:#8b949e;font-size:13px;font-weight:400'>Reaper blocks push on secret detection &nbsp;·&nbsp; Assembler gates merge-queue entry on CI &nbsp;·&nbsp; Nook attributes PR spend</em></div>"]
+    Peers["<div style='text-align:center;min-width:940px;line-height:1.8;padding:6px 10px'><b style='letter-spacing:1.5px;color:#79c0ff'>PEER&nbsp;PLUGINS&nbsp;REACT</b><br/><em style='color:#8b949e;font-size:13px;font-weight:400'>Reaper blocks push on secret detection &nbsp;·&nbsp; Nook attributes PR spend</em></div>"]
 
     Session --> Observe
     Observe --> Commit
