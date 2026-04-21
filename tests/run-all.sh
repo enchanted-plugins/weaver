@@ -43,11 +43,9 @@ printf '\n'
 
 # Iterate plugin subdirs in a stable order.
 for plugin_dir in "$SCRIPT_DIR"/*/; do
-    plugin_name=$(basename "$plugin_dir")
-    # Skip the shared helper dir — it's not a test suite itself.
-    if [[ "$plugin_name" == "shared" ]]; then continue; fi
-
-    # Collect test files; skip empty dirs silently.
+    # Collect test files; skip empty dirs silently. The `test-*.sh` glob
+    # already excludes helpers.sh and other library files; no need to
+    # special-case `tests/shared/`.
     shopt -s nullglob
     tests=("$plugin_dir"/test-*.sh)
     shopt -u nullglob
