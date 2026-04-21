@@ -51,13 +51,19 @@ cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null
 # Only care about git invocations. Short-circuit everything else.
 [[ "$cmd" =~ (^|[[:space:]])git([[:space:]]|$) ]] || exit 0
 
+# Resolve the repo path the hook is running in. The classifier needs this so
+# context-dependent rules (e.g. amend_of_pushed_head) can probe `git rev-list`
+# for the actual HEAD state. cwd works for Claude Code hooks, which execute
+# with the project dir as cwd.
+REPO_PATH="${WEAVER_REPO_PATH:-$(pwd)}"
+
 # Classify. Python exits 0 (safe), 1 (destructive), 2 (protected-destructive).
 # Capture stdout first, then run a second invocation purely for the exit code.
 # Two calls is wasteful but idempotent; the simpler `$(...)` + `$?` pattern
 # collides with `set -e` / `||` semantics and silently drops the code.
 set +e
-verdict="$("$PY" "$SHARED/destructive_patterns.py" "$cmd" 2>/dev/null)"
-"$PY" "$SHARED/destructive_patterns.py" "$cmd" >/dev/null 2>&1
+verdict="$("$PY" "$SHARED/destructive_patterns.py" "$cmd" "$REPO_PATH" 2>/dev/null)"
+"$PY" "$SHARED/destructive_patterns.py" "$cmd" "$REPO_PATH" >/dev/null 2>&1
 exit_code=$?
 set -e
 
