@@ -300,7 +300,7 @@
     
         <div class="plugin-card">
           <h3>boundary-segmenter</h3>
-          <p class="desc">W2 — Jaccard-Cosine Boundary Segmentation. Sylph's defining engine. Clusters PostToolUse(Edit|Write) events into task boundaries via multi-modal distance (file-set Jaccard + token cosine + idle-time gap). Standalone: works without Raven V1 by deriving token vectors from edit content. Upgraded automatically when Raven V1 embeddings are available on the event bus.</p>
+          <p class="desc">W2 — Jaccard-Cosine Boundary Segmentation. Sylph's defining engine. Clusters PostToolUse(Edit|Write) events into task boundaries via multi-modal distance (file-set Jaccard + token cosine + idle-time gap). Standalone: works without Crow V1 by deriving token vectors from edit content. Upgraded automatically when Crow V1 embeddings are available on the event bus.</p>
           <div class="section-label">Hooks</div>
           <div class="hook"><span class="phase">PostToolUse</span> <span class="matcher">Edit|Write|MultiEdit</span> → <code>boundary-segment.sh</code> <span class="dim">(10s)</span></div><div class="hook"><span class="phase">PreCompact</span> <span class="matcher">*</span> → <code>checkpoint-clusters.sh</code> <span class="dim">(5s)</span></div>
           <div class="section-label">Skills</div>
@@ -372,7 +372,7 @@
         </div>
         <div class="plugin-card">
           <h3>pr-lifecycle</h3>
-          <p class="desc">W4 — Path-History Reviewer Routing + idempotent PR state machine. Opens draft PRs with session-context descriptions (upgrades to Raven V4 when available), ranks reviewers via git-blame + CODEOWNERS + optional availability events, drives merge-queue integration. GitHub fully implemented via gh CLI; 9 other hosts stub cleanly and degrade to manual-handoff mode.</p>
+          <p class="desc">W4 — Path-History Reviewer Routing + idempotent PR state machine. Opens draft PRs with session-context descriptions (upgrades to Crow V4 when available), ranks reviewers via git-blame + CODEOWNERS + optional availability events, drives merge-queue integration. GitHub fully implemented via gh CLI; 9 other hosts stub cleanly and degrade to manual-handoff mode.</p>
           <div class="section-label">Hooks</div>
           <div class="hook"><span class="phase">PostToolUse</span> <span class="matcher">Bash</span> → <code>on-commit.sh</code> <span class="dim">(10s)</span></div>
           <div class="section-label">Skills</div>
@@ -396,7 +396,7 @@
         </div>
         <div class="plugin-card">
           <h3>sylph-learning</h3>
-          <p class="desc">W5 — Gauss Learning (Sylph). Per-developer preference persistence via exponential moving averages with Fae-A4 atomic serialization. Tracks commit-style (scope rate, body rate, types), branch-naming conventions, PR turnaround, reviewer overrides, W2 corrections. Priors flow back to W1/W2/W3/W4 after the bootstrap sample floor.</p>
+          <p class="desc">W5 — Gauss Learning (Sylph). Per-developer preference persistence via exponential moving averages with Emu-A4 atomic serialization. Tracks commit-style (scope rate, body rate, types), branch-naming conventions, PR turnaround, reviewer overrides, W2 corrections. Priors flow back to W1/W2/W3/W4 after the bootstrap sample floor.</p>
           <div class="section-label">Hooks</div>
           <div class="hook"><span class="phase">SessionStart</span> <span class="matcher">*</span> → <code>load-priors.sh</code> <span class="dim">(5s)</span></div><div class="hook"><span class="phase">PreCompact</span> <span class="matcher">*</span> → <code>checkpoint-learnings.sh</code> <span class="dim">(5s)</span></div>
           <div class="section-label">Skills</div>
