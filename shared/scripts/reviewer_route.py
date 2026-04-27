@@ -14,6 +14,13 @@ reviewers weighted by:
 Output: top-K reviewer logins, capped at SYLPH_REVIEWER_MAX_SUGGEST (3).
 
 Stdlib only. Delegates all git interaction to `git log`.
+
+Reference:
+    Thongtanunam P., McIntosh S., Hassan A.E., Iida H. (2015), "Who Should
+    Review My Code? A File Location-Based Code-Reviewer Recommendation
+    Approach for Modern Code Review", IEEE/ACM SANER 2015:141-150
+    (file-history-based reviewer recommendation; W4 extends with recency
+    decay and CODEOWNERS union boost).
 """
 
 from __future__ import annotations

@@ -33,6 +33,12 @@ SYLPH_GAUSS_BOOTSTRAP_MIN_SAMPLES — below the floor, confidence is low
 and Sylph ignores the learned priors.
 
 Stdlib only.
+
+Reference:
+    Gauss C.F. (1809), "Theoria motus corporum coelestium in sectionibus
+    conicis solem ambientium" (least-squares foundation for recursive
+    EMA-with-posterior updates). Ecosystem precedent: Wixie F6, Emu A7,
+    Crow H6, Djinn C5, Gorgon G5, Naga N5.
 """
 
 from __future__ import annotations

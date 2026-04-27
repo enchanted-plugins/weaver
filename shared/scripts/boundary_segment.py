@@ -21,6 +21,16 @@ Vector extraction:
     L2-normalized as a dict-weighted bag-of-tokens.
 
 Stdlib only. No numpy. No external deps.
+
+Reference:
+    Jaccard P. (1901), "Étude comparative de la distribution florale dans
+    une portion des Alpes et des Jura", Bulletin de la Société Vaudoise des
+    Sciences Naturelles 37:547-579 (set-similarity coefficient).
+    Salton G., Wong A., Yang C.S. (1975), "A vector space model for automatic
+    indexing", Communications of the ACM 18(11):613-620 (cosine similarity).
+    Hearst M.A. (1997), "TextTiling: Segmenting Text into Multi-paragraph
+    Subtopic Passages", Computational Linguistics 23(1):33-64 (online
+    boundary detection methodology).
 """
 
 from __future__ import annotations

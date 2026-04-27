@@ -19,6 +19,14 @@ Handles monorepos via per-subtree classification keyed by CODEOWNERS blocks
 or a `.sylph/workflow-map.yaml` overlay.
 
 Stdlib only. Delegates all git interaction to subprocess + `git` binary.
+
+Reference:
+    Driessen V. (2010), "A successful Git branching model"
+    (nvie.com/posts/a-successful-git-branching-model — gitflow taxonomy).
+    Quinlan J.R. (1986), "Induction of Decision Trees", Machine Learning
+    1(1):81-106 (rule-based classification foundation; W3 uses a hand-tuned
+    weighted decision tree rather than learned, but the framework is the
+    same).
 """
 
 from __future__ import annotations

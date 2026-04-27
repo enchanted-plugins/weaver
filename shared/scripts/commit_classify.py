@@ -11,6 +11,13 @@ borderline.
 
 Usage from hook: python commit_classify.py validate <message_file>
 Returns exit 0 on valid, 1 on invalid (with JSON diagnostics on stdout).
+
+Reference:
+    Myers E.W. (1986), "An O(ND) Difference Algorithm and Its Variations",
+    Algorithmica 1(1-4):251-266 (Stage 1 diff foundation; Sylph uses git's
+    Myers-based diff as the input signal). Conventional Commits 1.0.0
+    specification (conventionalcommits.org — type/scope/body/footer rules
+    enforced here in Stage 2).
 """
 
 from __future__ import annotations
